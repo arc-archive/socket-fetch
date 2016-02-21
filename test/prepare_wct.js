@@ -1,0 +1,3 @@
+WCT = {
+  environmentScripts: []
+};

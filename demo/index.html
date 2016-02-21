@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <title>chrome-storage</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../paper-styles/paper-styles.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input-container.html">
+  <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+  <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
+
+  <link rel="import" href="../socket-fetch.html">
+  <style is="custom-style">
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .panel-settings {
+    @apply(--layout-vertical);
+    @apply(--layout-center);
+  }
+
+  .logs div {
+    padding: 8px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section vertical-section-container centered">
+    <template is="dom-bind">
+      <p>Setup a HTTP request that will use <code>Chrome sockets API</code>.</p>
+      <section class="panel-settings">
+
+        <paper-input-container>
+          <label>URL</label>
+          <input is="iron-input" type="text" value="{{url::input}}" placeholder="URL to fetch">
+        </paper-input-container>
+
+        <paper-radio-group selected="{{method}}">
+          <paper-radio-button name="GET">GET</paper-radio-button>
+          <paper-radio-button name="POST">POST</paper-radio-button>
+        </paper-radio-group>
+
+        <paper-input-container>
+          <label>Content type</label>
+          <input is="iron-input" type="text" value="{{contentType::input}}" placeholder="Payload content type">
+        </paper-input-container>
+
+        <paper-input-container>
+          <label>Body</label>
+          <input is="iron-input" type="text" value="{{payload::input}}" placeholder="Body to send">
+        </paper-input-container>
+
+        <!-- action buttons -->
+        <paper-button on-click="makeRequest">Fetch</paper-button>
+      </section>
+      <section class="panel-settings">
+
+        <p>Make request using form data.</p>
+        <paper-button on-click="makeRequestFormData">Fetch</paper-button>
+
+      </section>
+      <section class="logs">
+        <h2>Log</h2>
+        <template is="dom-repeat" items="{{logs}}">
+          <div>
+            Log: [[item.log]]
+          </div>
+        </template>
+      </section>
+    </template>
+  </div>
+  <script>
+  var demo = document.querySelector('template');
+  demo.logs = [];
+  demo.url = '';
+  demo.contentType = 'application/json';
+  demo.payload = '';
+  demo.method = 'POST';
+
+  demo.addEventListener('dom-change', function() {
+    demo.set('url', 'http://www.google.com');
+    demo.set('contentType', 'application/json');
+    demo.set('payload', '{"test":"request"}');
+    demo.set('method', 'POST');
+  });
+  demo.makeRequest = function() {
+    var headers = {
+    };
+    var init = {
+      'method': demo.method,
+      'headers': new Headers(headers)
+    };
+    if (demo.method === 'POST') {
+      headers['Content-Type'] = demo.contentType;
+      headers['Content-Length'] = demo.payload.length;
+      init.body = demo.payload;
+    }
+    demo.push('logs', {
+      log: 'Making a request.'
+    });
+    var connection = new SocketFetch(demo.url, init);
+    connection.fetch()
+      .then((response) => {
+        if (response.ok) {
+          response.text().then((result) => {
+            demo.push('logs', {
+              log: 'Received response.'
+            });
+            console.log('Fetch result', result);
+          })
+          .catch((cause) => {
+            demo.push('logs', {
+              log: 'Received error.'
+            });
+            console.error('Error during fetch', cause);
+          });
+        }
+      })
+      .catch((cause) => {
+        console.error('Error during fetch', cause);
+      });
+  };
+  demo.makeRequestFormData = function() {
+    var headers = {
+      'Content-Type': 'multipart/form-data'
+    };
+    var fd = new FormData();
+    fd.append('formField', 'formValue');
+    var blob = new Blob(['{"a": "b", "c": "d"}'], {type: 'application/json'});
+    fd.append('formFile', blob);
+    var init = {
+      'method': 'POST',
+      'headers': new Headers(headers),
+      'body': fd
+    };
+    demo.push('logs', {
+      log: 'Making a request.'
+    });
+    var connection = new SocketFetch(demo.url, init);
+    connection.fetch()
+      .then((response) => {
+        if (response.ok) {
+          response.text().then((result) => {
+            demo.push('logs', {
+              log: 'Received response.'
+            });
+            console.log('Fetch result', result);
+          })
+          .catch((cause) => {
+            demo.push('logs', {
+              log: 'Received error.'
+            });
+            console.error('Error during fetch', cause);
+          });
+        }
+      })
+      .catch((cause) => {
+        console.error('Error during fetch', cause);
+      });
+  };
+  </script>
+</body>
+
+</html>
