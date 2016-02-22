@@ -85,7 +85,8 @@ The ArcRequest class is similar to JavaScript's Request class. You can initializ
 
 ### Initialization
 Initialize as Request object. The first parameter can be `String`, `Request` or `ArcRequest` object.
-Second argument may have following options;
+Second argument may have following options:
+
 | Name | Type | Description | Default |
 | --- | --- | --- | --- |
 | method | String | The request method, e.g., GET, POST. | `GET` |
