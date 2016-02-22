@@ -99,6 +99,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   });
   demo.makeRequest = function() {
     var headers = {
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      'Accept-Encoding': 'gzip, deflate, sdch',
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
+        'Chrome/50.0.2652.0 Safari/537.36'
     };
     var init = {
       'method': demo.method,
@@ -128,10 +132,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
             console.error('Error during fetch', cause);
           });
+        } else {
+          let log = `Received error response of status ${response.status} `;
+          log += response.statusText ? response.statusText : '';
+          demo.push('logs', {
+            log: log
+          });
+          console.log('Fetch result', response);
         }
       })
       .catch((cause) => {
-        console.error('Error during fetch', cause);
+        demo.push('logs', {
+          log: 'Received error.'
+        });
+        console.error('Error during fetch:');
+        console.dir(cause);
       });
   };
   demo.makeRequestFormData = function() {
@@ -164,12 +179,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             demo.push('logs', {
               log: 'Received error.'
             });
-            console.error('Error during fetch', cause);
+            console.error('Error during fetch:');
+            console.error(cause);
           });
+        } else {
+          let log = `Received error response of status ${response.status} `;
+          log += response.statusText ? response.statusText : '';
+          demo.push('logs', {
+            log: log
+          });
+          console.log('Fetch result', response);
         }
       })
       .catch((cause) => {
-        console.error('Error during fetch', cause);
+        demo.push('logs', {
+          log: 'Received error.'
+        });
+        console.error('Error during fetch:');
+        console.dir(cause);
       });
   };
   </script>

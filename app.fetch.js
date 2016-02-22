@@ -28,6 +28,8 @@
  *   }
  * });
  * </code>
+ *
+ * TODO: Add progress event.
  */
 class SocketFetch extends ArcEventSource {
   /**
@@ -68,35 +70,15 @@ class SocketFetch extends ArcEventSource {
      */
     this._response = undefined;
 
-    this.debug = true;
-
-    this._connection = {
-      /**
-       * True if current connection has been aborted
-       */
-      aborted: false,
-      /**
-       * Socket ID the instance is operating on
-       */
-      socketId: undefined,
-      /** True when connection is timed out */
-      timeout: false,
-      /**
-       * A reference to main resolve function
-       */
-      resolve: undefined,
-      /**
-       * A reference to main reject function.
-       */
-      reject: undefined,
-      /**
-       * A connection can be made only once in one instance. It fthe flag state is true then
-       * the implementation will throw an error
-       */
-      started: false,
-      host: undefined,
-      post: 80
-    };
+    if (typeof opts.debug !== 'undefined') {
+      this.debug = opts.debug;
+    } else {
+      this.debug = false;
+    }
+    /**
+     * True if the request has been aborted.
+     */
+    this.aborted = false;
     /**
      * A boolean property state represents the socket read status. It can be either:
      * STATUS (0) - expecting the message is contain a status line
@@ -107,72 +89,165 @@ class SocketFetch extends ArcEventSource {
      * when server closes the connection.
      */
     this.state = 0;
-
-    /**
-     * A integer representing status code of the response.
-     *
-     * @type {Number}
-     */
-    this.status = undefined;
-    /**
-     * An optional string representing response status message
-     *
-     * @type {String}
-     */
-    this.statusMessage = undefined;
-    /**
-     * A read headers string. It may be incomplete if state equals HEADERS or STATUS.
-     *
-     * @type {String}
-     */
-    this.headers = undefined;
-    /**
-     * A read response body. It may be incomplete if readyState does not equals DONE.
-     *
-     * @type {Uint8Array}
-     */
-    this.body = undefined;
-    /**
-     * A shortcut for finding content-type header in a headers list. It can be either a getter
-     * function that is looking for a Content-Type header or a value set after headers are parsed.
-     *
-     * @type {String}
-     */
-    this.contentType = undefined;
-    /**
-     * As a shortcut for finding Content-Length header in a headers list. It can be either a
-     * getter function that is looking for a Content-Length header or a value set after headers
-     * are parsed.
-     *
-     * @type {Number}
-     */
-    this.contentLength = undefined;
-    /**
-     * A shortcut for finding Content-Length header in a headers list. It can be either a getter
-     * function that is looking for a Content-Length header or a value set after headers are parsed
-     *
-     * @type {Boolean}
-     */
-    this.chunked = undefined;
-    /**
-     * A flag determining that the response is chunked Transfer-Encoding. When Transfer-Encoding
-     * header is set to "chunked" then the response will be split in chunks. Every chunk starts
-     * with hex number of length in chunk followed by new line character (\r\n or CR or 13|10).
-     * Because message received by the socket most probably will have different buffer size, the
-     * `readSocketData()` function may contain more than one part of chunk or incomplete part of
-     * chunk.
-     *
-     * @type {Number}
-     */
-    this.chunkSize = undefined;
     /**
      * A set of redirects.
      *
      * @type {Set}
      */
     this.redirects = undefined;
+    /**
+     * A reference to main promise.
+     */
+    this._mainPromise = {
+      resolve: undefined,
+      reject: undefined
+    };
+    /**
+     * Set of informations relevant to current socket connection.
+     */
+    this._connection = {
+      /**
+       * Socket ID the instance is operating on.
+       *
+       * @type {Number}
+       */
+      socketId: undefined,
+      /**
+       * A connection can be made only once in one instance. It fthe flag state is true then
+       * the implementation will throw an error.
+       *
+       * @type {Boolean}
+       */
+      started: false,
+      /**
+       * A host the socket is connecting to.
+       *
+       * @type {String}
+       */
+      host: undefined,
+      /**
+       * A port the socket is connecting on.
+       *
+       * @type {Number}
+       * @default 80
+       */
+      post: 80,
+      /**
+       * A integer representing status code of the response.
+       *
+       * @type {Number}
+       */
+      status: undefined,
+      /**
+       * An optional string representing response status message
+       *
+       * @type {String}
+       */
+      statusMessage: undefined,
+      /**
+       * A read headers string. It may be incomplete if state equals HEADERS or STATUS.
+       *
+       * @type {String}
+       */
+      headers: undefined,
+      /**
+       * A read response body. It may be incomplete if readyState does not equals DONE.
+       *
+       * @type {Uint8Array}
+       */
+      body: undefined,
+      /**
+       * As a shortcut for finding Content-Length header in a headers list. It can be either a
+       * getter function that is looking for a Content-Length header or a value set after headers
+       * are parsed.
+       *
+       * @type {Number}
+       */
+      contentLength: undefined,
+      /**
+       * A shortcut for finding Content-Length header in a headers list. It can be either a getter
+       * function that is looking for a Content-Length header or a value set after headers are
+       * parsed
+       *
+       * @type {Boolean}
+       */
+      chunked: undefined,
+      /**
+       * A flag determining that the response is chunked Transfer-Encoding. When Transfer-Encoding
+       * header is set to "chunked" then the response will be split in chunks. Every chunk starts
+       * with hex number of length in chunk followed by new line character (\r\n or CR or 13|10).
+       * Because message received by the socket most probably will have different buffer size, the
+       * `readSocketData()` function may contain more than one part of chunk or incomplete part of
+       * chunk.
+       *
+       * @type {Number}
+       */
+      chunkSize: undefined,
+      /**
+       * Some stats about the connection
+       */
+      stats: {
+        /**
+         * Timestamp of start.
+         * Set just before connection attempt.
+         */
+        startTime: undefined,
+        /**
+         * Time required to create TCP connection.
+         */
+        connect: undefined,
+        /**
+         * Time required to send HTTP request to the server.
+         */
+        send: undefined,
+        /**
+         * Waiting for a response from the server.
+         */
+        wait: undefined,
+        /**
+         * Time required to read entire response from the server.
+         */
+        receive: undefined,
+        /**
+         * Time required for SSL/TLS negotiation.
+         */
+        ssl: undefined,
+        _firstReceived: undefined,
+        _messageSending: undefined,
+        _waitingStart: undefined
+      }
+    };
+    /**
+     * Request timeout settings.
+     */
+    this._timeout = {
+      /**
+       * True when connection is timed out.
+       *
+       * @type {Boolean}
+       */
+      timedout: false,
+      /**
+       * User set timeout (in miliseconds).
+       *
+       * @type {Number}
+       */
+      timeout: this._request.timeout,
+      /**
+       * An id of timer function.
+       *
+       * @type {Number}
+       */
+      timeoutId: undefined
+    };
 
     this._setupUrlData();
+  }
+  /**
+   * Timeout set to the request.
+   */
+  get timeout() {
+    return this._timeout.timedout;
   }
   /**
    * Get a Request object.
@@ -190,6 +265,10 @@ class SocketFetch extends ArcEventSource {
   get response() {
     return this._response;
   }
+  /**
+   * Replace popular shemas with port number
+   *
+   */
   get protocol2port() {
     return {
       'http': 80,
@@ -197,16 +276,40 @@ class SocketFetch extends ArcEventSource {
       'ftp': 21
     };
   }
-  get STATUS() {
+  /**
+   * Status indicating thet expecting a ststus message.
+   *
+   * @type {Number}
+   * @default 0
+   */
+  static get STATUS() {
     return 0;
   }
-  get HEADERS() {
+  /**
+   * Status indicating thet expecting headers.
+   *
+   * @type {Number}
+   * @default 1
+   */
+  static get HEADERS() {
     return 1;
   }
-  get BODY() {
+  /**
+   * Status indicating thet expecting a body message.
+   *
+   * @type {Number}
+   * @default 2
+   */
+  static get BODY() {
     return 2;
   }
-  get DONE() {
+  /**
+   * Status indicating thet the message has been read and connection is closing or closed.
+   *
+   * @type {Number}
+   * @default 0
+   */
+  static get DONE() {
     return 3;
   }
   /**
@@ -216,9 +319,11 @@ class SocketFetch extends ArcEventSource {
    */
   fetch() {
     return new Promise((resolve, reject) => {
-      if (this._connection.aborted) {
-        this._createResponse(true);
-        resolve(this._response);
+      if (this.aborted) {
+        this._createResponse(true)
+        .then(() => {
+          resolve(this._response);
+        });
         return;
       }
       if (this._connection.started) {
@@ -227,13 +332,14 @@ class SocketFetch extends ArcEventSource {
       this._connection.started = true;
       this._connection._readFn = this.readSocketData.bind(this);
       this._connection._errorFn = this.readSocketError.bind(this);
-      this._connection.reject = reject;
-      this._connection.resolve = resolve;
+      this._mainPromise.reject = reject;
+      this._mainPromise.resolve = resolve;
       chrome.sockets.tcp.onReceive.addListener(this._connection._readFn);
       chrome.sockets.tcp.onReceiveError.addListener(this._connection._errorFn);
       this._createConnection();
     });
   }
+  /** Called after socket has been created and connection yet to be made. */
   _createConnection() {
     var socketProperties = {
       name: 'arc'
@@ -242,6 +348,7 @@ class SocketFetch extends ArcEventSource {
       this.log('Created socket', createInfo.socketId);
       this._connection.socketId = createInfo.socketId;
       this.log('Connecting to %s:%d', this._connection.host, this._connection.port);
+      this._connection.stats.startTime = Date.now();
       let promise;
       if (this._connection.port === 443) {
         promise = this._connectSecure(createInfo.socketId, this._connection.host,
@@ -250,13 +357,14 @@ class SocketFetch extends ArcEventSource {
         promise = this._connect(createInfo.socketId, this._connection.host, this._connection.port);
       }
       promise.then(() => {
+        this._runTimer();
         this.log('Connected to socked for host: ', this._connection.host, ' and port ',
           this._connection.port);
         this._readyState = 1;
         this._onConnected();
       }).catch((cause) => {
         this._readyState = 0;
-        this._connection.reject(cause);
+        this._mainPromise.reject(cause);
         this._cleanUp();
       });
     });
@@ -279,7 +387,9 @@ class SocketFetch extends ArcEventSource {
   _connectSecure(socketId, host, port) {
     return new Promise((resolve) => {
       chrome.sockets.tcp.setPaused(socketId, true, () => {
+        let connectionStart = performance.now();
         chrome.sockets.tcp.connect(socketId, host, port, (connectResult) => {
+          this._connection.stats.connect = performance.now() - connectionStart;
           if (chrome.runtime.lastError) {
             this.log(chrome.runtime.lastError);
             throw new Error('Connection error.');
@@ -287,7 +397,9 @@ class SocketFetch extends ArcEventSource {
           if (connectResult !== 0) {
             throw new Error('Connection to host ' + host + ' on port ' + port + ' unsuccessful');
           }
+          let secureStart = performance.now();
           chrome.sockets.tcp.secure(socketId, (secureResult) => {
+            this._connection.stats.ssl = performance.now() - secureStart;
             if (secureResult !== 0) {
               throw new Error('Unable to secure a connection to host ' + host + ' on port ' + port);
             }
@@ -297,7 +409,6 @@ class SocketFetch extends ArcEventSource {
       });
     });
   }
-
   /**
    * Connect to a socket. To use a secure connection call `_connectSecure` method.
    * Note that ths function will result with paused socket.
@@ -311,24 +422,44 @@ class SocketFetch extends ArcEventSource {
    * contain an Error object with description message.
    */
   _connect(socketId, host, port) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       chrome.sockets.tcp.setPaused(socketId, true, () => {
+        let connectionStart = performance.now();
         chrome.sockets.tcp.connect(socketId, host, port, (connectResult) => {
+          this._connection.stats.connect = performance.now() - connectionStart;
           if (chrome.runtime.lastError) {
             this.log(chrome.runtime.lastError);
-            throw new Error('Connection error.');
+            reject(chrome.runtime.lastError);
+            return;
           }
           if (connectResult !== 0) {
-            throw new Error('Connection to host ' + host + ' on port ' + port + ' unsuccessful');
+            reject('Connection to host ' + host + ' on port ' + port + ' unsuccessful');
+            return;
           }
           resolve();
         });
       });
     });
   }
-
+  /**
+   * Shortcut for dispatching a custom event on this.
+   *
+   * @param {String} name Name of the event
+   * @param {Object?} details Optional detail object.
+   */
+  _dispatchCustomEvent(name, details) {
+    var opts = {
+      'bubbles': true,
+      'cancelable': false
+    };
+    if (details) {
+      opts.detail = details;
+    }
+    this.dispatchEvent(new CustomEvent(name, opts));
+  }
+  /** Disconnect from the socket and release resources. */
   disconnect() {
-    console.log('Disconnect');
+    this.log('Disconnect');
     if (!this._connection.socketId) {
       return;
     }
@@ -348,7 +479,7 @@ class SocketFetch extends ArcEventSource {
       });
     });
   }
-
+  /** Set `debug: true` flag in init object to see debug messages */
   log(...entry) {
     if (this.debug) {
       console.log.apply(console, entry);
@@ -359,8 +490,10 @@ class SocketFetch extends ArcEventSource {
    * It will close the connection and clean up the resources.
    */
   abort() {
-    this._connection.aborted = true;
-    this._connection.reject(new Error('Couldn\'t find host.'));
+    this.aborted = true;
+    this._dispatchCustomEvent('abort');
+    this.state = SocketFetch.DONE;
+    this._mainPromise.reject(new Error('Couldn\'t find host.'));
     this._cleanUp();
   }
   /**
@@ -391,26 +524,68 @@ class SocketFetch extends ArcEventSource {
    * @return {ArcResponse} A response object.
    */
   _createResponse(includeRedirects) {
-    if (this._connection.aborted) {
+    return new Promise((resolve) => {
+      if (this.aborted) {
+        return;
+      }
+      if (this._connection.body) {
+        resolve(this.decompressData(this._connection.body));
+      } else {
+        resolve(this._connection.body);
+      }
+    })
+    .then((body) => {
+      let stats = Object.assign({}, this._connection.stats);
+      delete stats._firstReceived;
+      delete stats._messageSending;
+      delete stats._waitingStart;
+      let options = {
+        status: this._connection.status,
+        statusText: this._connection.statusMessage,
+        headers: this._connection.headers,
+        stats: stats
+      };
+      if (includeRedirects && this.redirects && this.redirects.size) {
+        options.redirects = this.redirects;
+      }
+      this._response = new ArcResponse(body, options);
+    });
+  }
+  /**
+   * If timeout init option is set then when connection is established the
+   * program will start counter after when it fire the connection will be aborted
+   * (with abort flag and abort event) and `timeout` flag set to true.
+   *
+   * Note that timer function in JavaScript environment can't guarantee execution
+   * after exactly set amount of time. Instead it will fire event in next empty slot
+   * in event queue.
+   *
+   * Note that the timer run at the moment when connection was established.
+   */
+  _runTimer() {
+    if (!this._timeout.timeout) {
       return;
     }
-    var options = {
-      status: this.status,
-      statusText: this.statusMessage,
-      headers: this.headers
-    };
-    if (this.body) {
-      this.body = this.decompressData(this.body);
-    }
-    this._response = new ArcResponse(this.body, options);
-    this._response.setOriginalHeaders(this.headers);
-    if (includeRedirects && this.redirects && this.redirects.size) {
-      this._response.setRedirects(this.redirects);
-    }
+    this._timeout.timeoutId = window.setTimeout(() => {
+      if (this.state !== SocketFetch.DONE && !this._timeout.timedout) {
+        this._timeout.timedout = true;
+        this.abort();
+      }
+    }, this._timeout.timeout);
   }
-
+  /**
+   * Cancel any active timeout timer.
+   */
+  _cancelTimer() {
+    if (!this._timeout.timeoutId) {
+      return;
+    }
+    window.clearTimeout(this._timeout.timeoutId);
+    this._timeout.timeoutId = undefined;
+  }
+  /** Called when the connection has been established. */
   _onConnected() {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     this.generateMessage()
@@ -420,6 +595,7 @@ class SocketFetch extends ArcEventSource {
         this.log('Generated message to send\n', debugMsg);
       }
       this.log('Sending message.');
+      this._connection.stats._messageSending = performance.now();
       chrome.sockets.tcp.send(this._connection.socketId, buffer, this.onSend.bind(this));
     });
   }
@@ -451,6 +627,11 @@ class SocketFetch extends ArcEventSource {
       }
     });
   }
+  /**
+   * Create a HTTP message to be send to the server.
+   *
+   * @return {Promise} Fullfiled promise with message ArrayBuffer.
+   */
   _createMessageBuffer(fileBuffer) {
     var headers = [];
     headers.push(this._request.method + ' ' + this._request.uri.path() + ' HTTP/1.1');
@@ -478,6 +659,9 @@ class SocketFetch extends ArcEventSource {
       reader.readAsArrayBuffer(body);
     });
   }
+  /**
+   * Create an ArrayBuffer from payload data.
+   */
   _createFileBuffer() {
     let ct = this._request.headers.has('content-type') ?
       this._request.headers.get('content-type') :
@@ -531,6 +715,10 @@ class SocketFetch extends ArcEventSource {
       });
     });
   }
+  /**
+   * Read a generated by Chrome boundary.
+   * It will return a non empty string when FormData was passed as an `body` parameter.
+   */
   _getBoundary(buffer) {
     var bufferView = new Uint8Array(buffer);
     var startIndex = this.indexOfSubarray(bufferView, [45, 45, 45, 45, 45, 45]);
@@ -546,21 +734,37 @@ class SocketFetch extends ArcEventSource {
    * Called when the message has been send to the remote host.
    */
   onSend(sendInfo) {
-    if (this._connection.aborted) {
+    this._connection.stats._waitingStart = performance.now();
+    this._connection.stats.send = this._connection.stats._waitingStart -
+      this._connection.stats._messageSending;
+    if (this.aborted) {
       return;
     }
     if (sendInfo.bytesWritten < 0) {
       this.log('Error writing to socket. Bytes sent: ' + sendInfo.bytesSent);
-      this._connection.reject(new Error('Couldn\'t find host.'));
+      this._mainPromise.reject(new Error('Couldn\'t find host.'));
       this._cleanUp();
       return;
     }
     chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     this.log('Written message. Bytes sent: ' + sendInfo.bytesSent);
+    this._dispatchCustomEvent('loadstart');
   }
-
+  /**
+   * Handler for socket read event.
+   */
   readSocketData(readInfo) {
-    if (this._connection.aborted) {
+    if (readInfo.socketId !== this._connection.socketId) {
+      return;
+    }
+    var now = performance.now();
+    if (this.state === SocketFetch.STATUS) {
+      this._connection.stats._firstReceived = now;
+      this._connection.stats.wait = now - this._connection.stats._waitingStart;
+    } else {
+      this._connection.stats.receive = now - this._connection.stats._firstReceived;
+    }
+    if (this.aborted) {
       return;
     }
     if (readInfo) {
@@ -574,12 +778,13 @@ class SocketFetch extends ArcEventSource {
       chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     }
   }
-
+  /**
+   * Handler for socker read error event.
+   */
   readSocketError(info) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
-    console.log('readSocketError');
     if (info.socketId !== this._connection.socketId) {
       return;
     }
@@ -588,44 +793,47 @@ class SocketFetch extends ArcEventSource {
 
     if (code === 100) {
       //connection has been closed by the remote server.
-      debugger;
       this.onResponseReady();
       return;
     }
     var message = this.getCodeMessage(code);
     this.log('readSocketError:', message, code);
-    if (this.state !== this.DONE && this._connection.reject) {
-      this._connection.reject(new Error(message));
+    if (this.state !== SocketFetch.DONE && this._mainPromise.reject) {
+      let error = new Error(message);
+      this._mainPromise.reject(error);
+      this._dispatchCustomEvent('error', {
+        error: error
+      });
+      this._cancelTimer();
     }
   }
-
   /**
    * Process received message.
    *
    * @param {ArrayBuffer} data Received message.
    */
   _processSocketMessage(data) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     data = new Uint8Array(data);
     //this.log('has message', data);
-    if (this.state === this.DONE) {
+    if (this.state === SocketFetch.DONE) {
       return;
     }
-    if (this.state === this.STATUS) {
+    if (this.state === SocketFetch.STATUS) {
       data = this._processStatus(data);
       if (data === null) {
         return;
       }
     }
-    if (this.state === this.HEADERS) {
+    if (this.state === SocketFetch.HEADERS) {
       data = this._processHeaders(data);
       if (data === null) {
         return;
       }
     }
-    if (this.state === this.BODY) {
+    if (this.state === SocketFetch.BODY) {
       this._processBody(data);
       return;
     }
@@ -637,7 +845,7 @@ class SocketFetch extends ArcEventSource {
    * and then will set `state` to HEADERS.
    */
   _processStatus(data) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     this.log('Processing status');
@@ -648,32 +856,35 @@ class SocketFetch extends ArcEventSource {
     statusLine = statusLine.replace(/HTTP\/\d(\.\d)?\s/, '');
     var status = statusLine.substr(0, statusLine.indexOf(' '));
     try {
-      this.status = parseInt(status);
+      this._connection.status = parseInt(status);
     } catch (e) {
-      this.status = 0;
+      this._connection.status = 0;
     }
-    this.statusMessage = statusLine.substr(statusLine.indexOf(' ') + 1);
-    this.state = this.HEADERS;
+    this._connection.statusMessage = statusLine.substr(statusLine.indexOf(' ') + 1);
+    this.state = SocketFetch.HEADERS;
     return data;
   }
+  /**
+   * Read headers from the received data.
+   */
   _processHeaders(data) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     this.log('Processing headers');
-    if (!this.headers) {
-      this.headers = '';
+    if (!this._connection.headers) {
+      this._connection.headers = '';
     }
     var index = this.indexOfSubarray(data, [13, 10, 13, 10]);
     if (index === -1) {
       //end in next chunk
-      this.headers += this.arrayBufferToString(data);
+      this._connection.headers += this.arrayBufferToString(data);
       return null;
     }
     var headersArray = data.subarray(0, index);
-    this.headers += this.arrayBufferToString(headersArray);
+    this._connection.headers += this.arrayBufferToString(headersArray);
     this._parseHeaders();
-    this.state = this.BODY;
+    this.state = SocketFetch.BODY;
     data = data.subarray(index + 4);
     if (data.length === 0) {
       return null;
@@ -686,36 +897,36 @@ class SocketFetch extends ArcEventSource {
    * @param {Uint8Array} data A data to process
    */
   _processBody(data) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     this.log('Processing body');
-    if (this.chunked) {
+    if (this._connection.chunked) {
       while (true) {
-        if (!this.chunkSize) {
+        if (!this._connection.chunkSize) {
           data = this.readChunkSize(data);
-          this.log('Chunk size: ', this.chunkSize);
-          if (!this.chunkSize) {
+          this.log('Chunk size: ', this._connection.chunkSize);
+          if (!this._connection.chunkSize) {
             this.onResponseReady();
             return;
           }
         }
-        let size = Math.min(this.chunkSize, data.length);
+        let size = Math.min(this._connection.chunkSize, data.length);
         this.log('Part size: ', size);
-        if (!this.body) {
+        if (!this._connection.body) {
           this.log('Creating new body');
-          this.body = new Uint8Array(data.subarray(0, size));
+          this._connection.body = new Uint8Array(data.subarray(0, size));
         } else {
           this.log('Appending to the body');
-          let bodySize = size + this.body.length;
+          let bodySize = size + this._connection.body.length;
           let body = new Uint8Array(bodySize);
-          body.set(this.body);
-          body.set(data.subarray(0, size), this.body.length);
-          this.body = body;
+          body.set(this._connection.body);
+          body.set(data.subarray(0, size), this._connection.body.length);
+          this._connection.body = body;
         }
-        this.chunkSize -= size;
-        this.log('Body size is: ', this.body.length, ' and chunk size is left is: ',
-          this.chunkSize);
+        this._connection.chunkSize -= size;
+        this.log('Body size is: ', this._connection.body.length, ' and chunk size is left is: ',
+          this._connection.chunkSize);
         data = data.subarray(size + 2); // + CR
         if (data.length === 0) {
           this.log('No more data here. Waiting for new chunk');
@@ -723,23 +934,23 @@ class SocketFetch extends ArcEventSource {
         }
       }
     } else {
-      if (!this.body) {
+      if (!this._connection.body) {
         this.log('Creating new body');
-        this.body = new Uint8Array(data.length);
-        this.body.set(data);
-        if (this.body.length >= this.contentLength) {
+        this._connection.body = new Uint8Array(data.length);
+        this._connection.body.set(data);
+        if (this._connection.body.length >= this._connection.contentLength) {
           this.log('Response ready. Calling it.');
           this.onResponseReady();
         }
       } else {
-        let len = this.body.length;
+        let len = this._connection.body.length;
         let sumLength = len + data.length;
         let newArray = new Uint8Array(sumLength);
-        newArray.set(this.body);
+        newArray.set(this._connection.body);
         newArray.set(data, len);
-        this.body = newArray;
+        this._connection.body = newArray;
         this.log('Appended data to body.');
-        if (newArray.length >= this.contentLength) {
+        if (newArray.length >= this._connection.contentLength) {
           this.log('Response ready. Calling it.');
           this.onResponseReady();
         }
@@ -753,17 +964,16 @@ class SocketFetch extends ArcEventSource {
    * (default) or it with throw an error if it is set to `error`.
    */
   onResponseReady() {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
-    if (this.state === this.DONE) {
+    if (this.state === SocketFetch.DONE) {
       return;
     }
-    this.state = this.DONE;
-
-    if (this.status >= 300 && this.status < 400) {
+    this.state = SocketFetch.DONE;
+    if (this._connection.status >= 300 && this._connection.status < 400) {
       if (this.redirect === 'error') {
-        this._connection.reject({
+        this._mainPromise.reject({
           'message': 'Redirects are not allowed',
           'redirect': true
         });
@@ -771,35 +981,37 @@ class SocketFetch extends ArcEventSource {
         return;
       }
       let location = null;
-      if (this.headers && this.headers.has('Location')) {
-        location = this.headers.get('Location');
+      if (this._connection.headers && this._connection.headers.has('Location')) {
+        location = this._connection.headers.get('Location');
       }
       // this is a redirect;
-      this.dispatchEvent(new CustomEvent('beforeredirect', {
-        detail: {
-          location: location
-        }
-      }));
+      this._dispatchCustomEvent('beforeredirect', {
+        location: location
+      });
       if (!this.redirects) {
         this.redirects = new Set();
       }
-      this._createResponse(false);
-      this.redirects.add(this._response);
-      this._cleanUpRedirect()
+      this._createResponse(false)
+      .then(() => {
+        this.redirects.add(this._response);
+        return this._cleanUpRedirect();
+      })
       .then(() => {
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
       });
     } else {
-      this.dispatchEvent(new CustomEvent('load', {
-        detail: {
-          resutl: this.response
-        }
-      }));
-      this._createResponse(true);
-      this._connection.resolve(this._response);
-      this._cleanUp();
+      this._dispatchCustomEvent('loadend');
+      this._createResponse(true)
+      .then(() => {
+        this._cancelTimer();
+        this._dispatchCustomEvent('load', {
+          response: this._response
+        });
+        this._mainPromise.resolve(this._response);
+        this._cleanUp();
+      });
     }
   }
   /**
@@ -807,30 +1019,39 @@ class SocketFetch extends ArcEventSource {
    */
   _cleanUp() {
     this._cleanUpRedirect();
-    this._connection.reject = undefined;
-    this._connection.resolve = undefined;
+    this._mainPromise.reject = undefined;
+    this._mainPromise.resolve = undefined;
     chrome.sockets.tcp.onReceive.removeListener(this._connection._readFn);
     chrome.sockets.tcp.onReceiveError.removeListener(this._connection._errorFn);
     this._connection._readFn = undefined;
     this._connection._errorFn = undefined;
     this.redirects = undefined;
+    this._cancelTimer();
   }
   /** Clean up for redirect */
   _cleanUpRedirect() {
     return this.disconnect()
     .then(() => {
-      this.body = undefined;
-      this.headers = undefined;
-      this.chunkSize = undefined;
-      this.chunked = undefined;
-      this.contentLength = undefined;
-      this.contentType = undefined;
-      this.statusMessage = undefined;
-      this.status = undefined;
-      this.state = this.STATUS;
+      this._connection.body = undefined;
+      this._connection.headers = undefined;
+      this._connection.chunkSize = undefined;
+      this._connection.chunked = undefined;
+      this._connection.contentLength = undefined;
+      this._connection.statusMessage = undefined;
+      this._connection.status = undefined;
+      this.state = SocketFetch.STATUS;
       this._connection.host = undefined;
       this._connection.port = undefined;
       this._response = undefined;
+      this._connection.stats.startTime = undefined;
+      this._connection.stats.connect = undefined;
+      this._connection.stats.send = undefined;
+      this._connection.stats.wait = undefined;
+      this._connection.stats.receive = undefined;
+      this._connection.stats.ssl = undefined;
+      this._connection.stats._firstReceived = undefined;
+      this._connection.stats._messageSending = undefined;
+      this._connection.stats._waitingStart = undefined;
     });
   }
   /**
@@ -842,7 +1063,7 @@ class SocketFetch extends ArcEventSource {
    * @returns {Uint8Array} Truncated response without chunk size line
    */
   readChunkSize(array) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
     var index = this.indexOfSubarray(array, [13, 10]);
@@ -852,7 +1073,7 @@ class SocketFetch extends ArcEventSource {
     }
     var sizeArray = array.subarray(0, index);
     var sizeHex = this.arrayBufferToString(sizeArray);
-    this.chunkSize = parseInt(sizeHex, 16);
+    this._connection.chunkSize = parseInt(sizeHex, 16);
     return array.subarray(index + 2);
   }
   /**
@@ -860,22 +1081,19 @@ class SocketFetch extends ArcEventSource {
    * the ststaus to BODY.
    */
   _parseHeaders() {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return;
     }
-    var list = this.headersToObject(this.headers);
-    this.log('Received headers list', this.headers, list);
-    this.headers = new Headers(list);
-    if (this.headers.has('Content-Type')) {
-      this.contentType = this.headers.get('Content-Type');
+    var list = this.headersToObject(this._connection.headers);
+    this.log('Received headers list', this._connection.headers, list);
+    this._connection.headers = new Headers(list);
+    if (this._connection.headers.has('Content-Length')) {
+      this._connection.contentLength = this._connection.headers.get('Content-Length');
     }
-    if (this.headers.has('Content-Length')) {
-      this.contentLength = this.headers.get('Content-Length');
-    }
-    if (this.headers.has('Transfer-Encoding')) {
-      let tr = this.headers.get('Transfer-Encoding');
+    if (this._connection.headers.has('Transfer-Encoding')) {
+      let tr = this._connection.headers.get('Transfer-Encoding');
       if (tr === 'chunked') {
-        this.chunked = true;
+        this._connection.chunked = true;
       }
     }
   }
@@ -887,22 +1105,32 @@ class SocketFetch extends ArcEventSource {
    * @return {Uint8Array} Decompressed data.
    */
   decompressData(data) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return data;
     }
-    if (this._connection.aborted) {
+    if (!this._connection.headers || !this._connection.headers.has('Content-Encoding')) {
       return data;
     }
-    if (!this.headers || !this.headers.has('Content-Encoding')) {
-      return data;
-    }
-    var ce = this.headers.get('Content-Encoding');
-    if (ce.indexOf('gzip') !== -1) {
-      let inflate = new Zlib.Gunzip(data);
-      data = inflate.decompress();
-    } else if (ce.indexOf('deflate') !== -1) {
-      var inflate = new Zlib.Inflate(data);
-      data = inflate.decompress();
+    var ce = this._connection.headers.get('Content-Encoding');
+    if (ce.indexOf('gzip') !== -1 || ce.indexOf('deflate') !== -1) {
+      return new Promise((resolve, reject) => {
+        let workerUrl = 'decompress-worker.js';
+        if (location.pathname === '/components/tasks/demo/index.html') {
+          // demo, test
+          workerUrl = '../decompress-worker.js';
+        }
+        let worker = new Worker(workerUrl);
+        worker.onmessage = (e) => {
+          resolve(e.data);
+        };
+        worker.onerror = (e) => {
+          reject(e.data);
+        };
+        worker.postMessage({
+          'buffer': this._connection.body,
+          'compression': ce
+        });
+      });
     }
     return data;
   }
@@ -913,7 +1141,7 @@ class SocketFetch extends ArcEventSource {
    * @return {Object} And object of key-value pairs where key is a
    */
   headersToObject(headersString) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return [];
     }
     if (headersString === null || headersString.trim() === '') {
@@ -950,7 +1178,7 @@ class SocketFetch extends ArcEventSource {
    * found.
    */
   indexOfSubarray(inputArray, subArray) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return -1;
     }
     var result = -1;
@@ -981,7 +1209,7 @@ class SocketFetch extends ArcEventSource {
    * @returns {String} Converted string
    */
   arrayBufferToString(buff) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return '';
     }
     var array = new Uint8Array(buff);
@@ -998,7 +1226,7 @@ class SocketFetch extends ArcEventSource {
    * @returns {ArrayBuffer}
    */
   stringToArrayBuffer(string) {
-    if (this._connection.aborted) {
+    if (this.aborted) {
       return new ArrayBuffer();
     }
     var buffer = new ArrayBuffer(string.length);
@@ -1008,7 +1236,9 @@ class SocketFetch extends ArcEventSource {
     }
     return buffer;
   }
-
+  /**
+   * Set up URL data relevant during making a connection.
+   */
   _setupUrlData() {
     let port = this._request.uri.port();
     if (!port) {

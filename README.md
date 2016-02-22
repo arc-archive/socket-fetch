@@ -17,8 +17,9 @@ Now you can use following classes:
 * ArcRequest
 * ArcResponse
 * SocketFetch
+* HttpParser
 
-The Arc prefix comes from Advanced Rest Client project.
+The Arc prefix comes from [Advanced Rest Client] project.
 
 ## usage
 
@@ -79,4 +80,28 @@ var init = {
 ```
 You can send body of type of Blob, BufferSource, FormData, URLSearchParams, or String.
 
+## ArcRequest
+The ArcRequest class is similar to JavaScript's Request class. You can initialize it the same way as regular Request class.
+
+### Initialization
+Initialize as Request object. The first parameter can be `String`, `Request` or `ArcRequest` object.
+Second argument may have following options;
+| Name | Type | Description | Default |
+| --- | --- | --- | --- |
+| method | String | The request method, e.g., GET, POST. | `GET` |
+| headers | Headers or Object | Any headers you want to add to your request, contained within a Headers object or an object literal with key value pairs. Note that the library will not generate default headers. If none headers are passed it will not send headers in the request. | _none_ |
+| body | Blob, BufferSource, FormData, URLSearchParams, or String | Any body that you want to add to your request. Note that the body will be removed if the request's method is either `GET` or `HEAD` | _none_ |
+| redirect | String | The redirect mode to use: follow or error. If follow is set the result will contain redairect information. | `follow` |
+| timeout | Number | A number of milliseconds for connection timeout. Note that the timer run at the moment when connection was established. | _none_ |
+
+
+## Bonus in ArcResponse
+Regular Response object will not contain all headers in the response. ArcResponse class however will return all received headers from the server - even the prohibited ones. Other properties and methods are inherited from the Response object.
+
+Additionally the ArcResponse will contain two custom fields:
+* redirects {Set<ArcResponse>} - A list of responses that lead to redirection
+* stats {Set<Object>} - Some stats about the request and response. It is the same as `timings` object in HAR 1.2 specification.
+
+
   [chrome.sockets.tcp]: https://developer.chrome.com/apps/sockets_tcp
+  [Advanced Rest Client]: https://github.com/jarrodek/ChromeRestClient

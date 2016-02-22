@@ -66,6 +66,13 @@ class ArcRequest {
      */
     this._redirect = 'follow';
     /**
+     * A number of milliseconds for connection timeout.
+     * Note that the timer run at the moment when connection was established.
+     *
+     * @type {Number}
+     */
+    this._timeout = undefined;
+    /**
      * Defines the resource to fetch
      *
      * @type {String}
@@ -85,17 +92,20 @@ class ArcRequest {
    * @param {Object} init an object with passed initial values.
    */
   _assignInit(init) {
-    if (init.method) {
+    if ('method' in init) {
       this.method = init.method;
     }
-    if (init.headers) {
+    if ('headers' in init) {
       this.headers = init.headers;
     }
-    if (init.body) {
+    if ('body' in init) {
       this.body = init.body;
     }
-    if (init.redirect) {
+    if ('redirect' in init) {
       this.redirect = init.redirect;
+    }
+    if ('timeout' in init) {
+      this.timeout = init.timeout;
     }
   }
   /**
@@ -105,11 +115,13 @@ class ArcRequest {
    * @param {ArcRequest} input An existing instance.
    */
   _assignFromInstance(input) {
+    input = Object.assign({}, input);
     this._url = input._url;
     this._method = input._method;
     this._headers = input._headers;
     this._body = input._body;
     this._redirect = input._redirect;
+    this._timeout = input._timeout;
   }
   /**
    * Sets a HTTP method to this {@link ArcRequest} object.
@@ -190,5 +202,17 @@ class ArcRequest {
    */
   get uri() {
     return this._uri;
+  }
+
+  set timeout(timeout) {
+    if (isNaN(timeout)) {
+      console.warn(`Timeout of ${timeout} is not a number`);
+      return;
+    }
+    this._timeout = timeout;
+  }
+
+  get timeout() {
+    return this._timeout;
   }
 }

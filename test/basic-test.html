@@ -9,63 +9,46 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../socket-fetch.html">
+</head>
 
-    <link rel="import" href="../../test-fixture/test-fixture.html">
-    <link rel="import" href="../chrome-storage.html">
-  </head>
-  <body>
+<body>
+  <script>
+  var alarms;
+  suite('socket-fetch', function() {
+    setup(function() {
 
-    <test-fixture id="fixture">
-      <template>
-        <chrome-alarms id="alarms" name="test-alarm"></chrome-alarms>
-      </template>
-    </test-fixture>
+    });
+    teardown(function(done) {
+      done();
+    });
 
-    <script>
-      var alarms;
+    test('Create the request', function(done) {
+      var headers = {
+        'Content-Type': 'multipart/form-data'
+      };
+      var fd = new FormData();
+      fd.append('formField', 'formValue');
+      var blob = new Blob(['{"a": "b", "c": "d"}'], {type: 'application/json'});
+      fd.append('formFile', blob);
+      var init = {
+        'method': 'POST',
+        'headers': new Headers(headers),
+        'body': fd
+      };
+      var connection = new SocketFetch(demo.url, init);
+      expect(connection.request).to.be.an('object');
+    });
+  });
+  </script>
+</body>
 
-      suite('<chrome-storage>', function() {
-
-        setup(function () {
-          alarms = document.getElementById('fixture').create();
-          storage.flushDebouncer('reload');
-        });
-
-        teardown(function (done) {
-          chrome.alarms.clearAll(function () {
-            if (chrome.runtime.lastError) {
-              done(chrome.runtime.lastError);
-              return;
-            }
-            done();
-          });
-        });
-
-        test('set alarm', function (done) {
-          var infoFn = function(e) {
-            var alarms = e.detail.alarms;
-            assert.notEqual(alarms.length, 1, 'Should be one alarm set');
-            assert.equal(alarms[0].name, alarms.name, 'Alarm name do not match set name.');
-            alarms.removeEventListener('alarm-info', infoFn);
-            done();
-          };
-          alarms.addEventListener('alarm-info', infoFn);
-          alarms.name = 'test-alarm';
-          alarms.create({
-            'delayInMinutes': 1
-          });
-          alarms.getAll();
-        });
-        
-      });
-    </script>
-
-  </body>
 </html>

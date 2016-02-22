@@ -16,36 +16,69 @@
  ******************************************************************************/
 /* global Response */
 /**
- * The {@link ArcResponse} class behaves the same way as JavaScript's Response class 
+ * The {@link ArcResponse} class behaves the same way as JavaScript's Response class
  * but it have additional methods.
- * 
+ *
  */
-class ArcResponse extends Response {
+class ArcResponse {
   /**
    * The ArcResponse() constructor creates a new {@link ArcResponse} object.
-   * 
+   *
    * @constructor
-   * @param {Blob|BufferSource|FormData|URLSearchParams|USVString} body A response body. 
+   * @param {Blob|BufferSource|FormData|URLSearchParams|USVString} body A response body.
    * @param {Object} init (Optional) The same init options as Response object.
    * See https://developer.mozilla.org/en-US/docs/Web/API/Response/Response for more information.
    */
   constructor(body, init) {
-    super(body, init);
-    this.redirects = new Set();
-    
-    this.setRedirects = (redirects) => {
-      if (!(redirects instanceof Set)) {
-        redirects = new Set(redirects);
-      }
-      this.redirects = redirects;
-    };
-    /**
-     * this.headers will not contain headers like Cookie.
-     * Full list of received headers will be available
-     * in this.originalHeaders object.
-     */
-    this.setOriginalHeaders = (headers) => {
-      this.originalHeaders = headers;
-    };
+    this._response = new Response(body, init);
+    if (!(init.redirects instanceof Set)) {
+      init.redirects = new Set(init.redirects);
+    }
+    this.redirects = init.redirects;
+    this.stats = init.stats;
+    this._headers = init.headers;
+  }
+  get type() {
+    return this._response.type;
+  }
+  get status() {
+    return this._response.status;
+  }
+  get statusText() {
+    return this._response.statusText;
+  }
+  get ok() {
+    return this._response.ok;
+  }
+  get headers() {
+    return this._headers;
+  }
+  get bodyUsed() {
+    return this._response.bodyUsed;
+  }
+
+  clone() {
+    return this._response.clone();
+  }
+  error() {
+    return this._response.error();
+  }
+  redirect() {
+    return this._response.redirect();
+  }
+  arrayBuffer() {
+    return this._response.arrayBuffer();
+  }
+  blob() {
+    return this._response.blob();
+  }
+  formData() {
+    return this._response.formData();
+  }
+  json() {
+    return this._response.json();
+  }
+  text() {
+    return this._response.text();
   }
 }
