@@ -634,7 +634,16 @@ class SocketFetch extends ArcEventSource {
    */
   _createMessageBuffer(fileBuffer) {
     var headers = [];
-    headers.push(this._request.method + ' ' + this._request.uri.path() + ' HTTP/1.1');
+    var path = this._request.uri.path();
+    var search = this._request.uri.search();
+    var hash = this._request.uri.hash();
+    if (search) {
+      path += search;
+    }
+    if (hash && path !== '#') {
+      path += hash;
+    }
+    headers.push(this._request.method + ' ' + path + ' HTTP/1.1');
     headers.push('HOST: ' + this._connection.host);
     if (this._request.headers) {
       this._request.headers.forEach((value, key) => {
