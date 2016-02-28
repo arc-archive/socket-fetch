@@ -506,6 +506,8 @@ class SocketFetch extends ArcEventSource {
     }
     if (opts.headers) {
       opts.headers = new Headers(opts.headers);
+    } else {
+      opts.headers = new Headers();
     }
     var defaults = {
       'method': 'GET',
@@ -674,7 +676,7 @@ class SocketFetch extends ArcEventSource {
    * Create an ArrayBuffer from payload data.
    */
   _createFileBuffer() {
-    let ct = this._request.headers.has('content-type') ?
+    let ct = this._request.headers && this._request.headers.has('content-type') ?
       this._request.headers.get('content-type') :
       undefined;
     let blobOptions = {};
