@@ -15,23 +15,7 @@
   "unused": true,
   "newcap": false,
   "globals": {
-    "wrap": true,
-    "unwrap": true,
-    "Polymer": true,
-    "page": true,
-    "arc": true,
-    "ArcBehaviors": true,
     "chrome": true,
-    "KeyframeEffect": true,
-    "StatusNotification": true,
-    "HAR": true,
-    "HistoryUrlObject": true,
-    "HistorySocketObject": true,
-    "ProjectObject": true,
-    "ServerExportedObject": true,
-    "RequestObject": true,
-    "fetch": true,
-    "Dexie": true,
-    "FileExport": true
+    "URLSearchParams": true
   }
 }
