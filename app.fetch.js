@@ -497,7 +497,7 @@ class SocketFetch extends ArcEventSource {
     this.aborted = true;
     this._dispatchCustomEvent('abort');
     this.state = SocketFetch.DONE;
-    this._mainPromise.reject(new Error('Couldn\'t find host.'));
+    this._mainPromise.reject(new Error('Request aborted'));
     this._cleanUp();
   }
   /**
