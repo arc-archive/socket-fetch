@@ -892,6 +892,15 @@ class SocketFetch extends ArcEventSource {
     this.state = SocketFetch.BODY;
     data = data.subarray(index + 4);
     if (data.length === 0) {
+      if (this._connection.headers.has('Content-Length')) {
+        // If the server do not close connection and clearly indicate that there are no
+        // further data to receive the app can close the connection and prepare the response.
+        let length = Number(this._connection.headers.get('Content-Length'));
+        // NaN never equals NaN. This is faster.
+        if (length === length && length === 0) {
+          this.onResponseReady();
+        }
+      }
       return null;
     }
     return data;
