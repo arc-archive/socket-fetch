@@ -615,10 +615,16 @@ class SocketFetch extends ArcEventSource {
         .then((fileBuffer) => {
           let boundary = this._getBoundary(fileBuffer);
           if (boundary) {
-            this._request.headers.set('content-type',
-              'multipart/alternative; boundary=' + boundary);
+            let currentCt = this._request.headers.get('content-type');
+            if (!currentCt || (currentCt && currentCt.indexOf('boundary') === -1)) {
+              this._request.headers.set('content-type',
+                'multipart/form-data; boundary=' + boundary);
+            }
           }
-          this._request.headers.set('Content-Length', fileBuffer.byteLength);
+          let cl = this._request.headers.get('Content-Length');
+          if (!cl) {
+            this._request.headers.set('Content-Length', fileBuffer.byteLength);
+          }
           return this._createMessageBuffer(fileBuffer);
         })
         .then((messageBuffer) => {
@@ -681,8 +687,7 @@ class SocketFetch extends ArcEventSource {
    */
   _createFileBuffer() {
     let ct = this._request.headers && this._request.headers.has('content-type') ?
-      this._request.headers.get('content-type') :
-      undefined;
+      this._request.headers.get('content-type') : undefined;
     let blobOptions = {};
     if (ct) {
       blobOptions.type = ct;
@@ -693,8 +698,12 @@ class SocketFetch extends ArcEventSource {
       return this._transferAndCreateFileBuffer();
     }
     return new Promise((resolve, reject) => {
-      if (body instanceof ArrayBuffer ||
-        typeof body === 'string') {
+      if (typeof body === 'string') {
+        body = this._normalizeString(body);
+        body = new Blob([body], blobOptions);
+      } else if (body instanceof Blob) {
+        //nothing
+      } else if (body instanceof ArrayBuffer) {
         body = new Blob([body], blobOptions);
       }  else {
         reject(new Error('Unsupported payload.'));
@@ -709,6 +718,35 @@ class SocketFetch extends ArcEventSource {
       });
       reader.readAsArrayBuffer(body);
     });
+  }
+  /**
+   * NormalizeLineEndingsToCRLF
+   * https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/
+   * platform/text/LineEnding.cpp&rcl=1458041387&l=101
+   *
+   * TODO: Check if using Uint8Array is faster.
+   */
+  _normalizeString(string) {
+    var result = '';
+    for (var i = 0; i < string.length; i++) {
+      let c = string[i];
+      let p = string[i + 1];
+      if (c === '\r') {
+        // Safe to look ahead because of trailing '\0'.
+        if (p && p !== '\n') {
+          // Turn CR into CRLF.
+          result += '\r';
+          result += '\n';
+        }
+      } else if (c === '\n') {
+        result += '\r';
+        result += '\n';
+      } else {
+        // Leave other characters alone.
+        result += c;
+      }
+    }
+    return result;
   }
 
   _transferAndCreateFileBuffer() {

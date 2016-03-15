@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="../../paper-button/paper-button.html">
   <link rel="import" href="../../paper-input/paper-input-container.html">
+  <link rel="import" href="../../paper-input/paper-textarea.html">
   <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
   <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
 
@@ -35,6 +36,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   .logs div {
     padding: 8px;
   }
+  paper-input-container,
+  paper-textarea {
+    width: 100%;
+  }
   </style>
 </head>
 
@@ -46,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-input-container>
           <label>URL</label>
-          <input is="iron-input" type="text" value="{{url::input}}" placeholder="URL to fetch">
+          <input is="iron-input" type="text" value="{{url::input}}">
         </paper-input-container>
 
         <paper-radio-group selected="{{method}}">
@@ -56,13 +61,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-input-container>
           <label>Content type</label>
-          <input is="iron-input" type="text" value="{{contentType::input}}" placeholder="Payload content type">
+          <input is="iron-input" type="text" value="{{contentType::input}}">
         </paper-input-container>
 
-        <paper-input-container>
-          <label>Body</label>
-          <input is="iron-input" type="text" value="{{payload::input}}" placeholder="Body to send">
-        </paper-input-container>
+        <paper-textarea value="{{payload}}" label="Body"></paper-textarea>
 
         <!-- action buttons -->
         <paper-button on-click="makeRequest">Fetch</paper-button>
@@ -109,8 +111,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       'headers': new Headers(headers)
     };
     if (demo.method === 'POST') {
-      headers['Content-Type'] = demo.contentType;
-      headers['Content-Length'] = demo.payload.length;
+      init.headers.append('Content-Type', demo.contentType);
+      // headers['Content-Length'] = demo.payload.length;
       init.body = demo.payload;
     }
     demo.push('logs', {
