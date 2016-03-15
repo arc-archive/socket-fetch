@@ -240,6 +240,12 @@ class SocketFetch extends ArcEventSource {
        */
       timeoutId: undefined
     };
+    /**
+     * True if the request has FileData object as payload.
+     * In this case `socket-fetch` must extract generated boudary and update content type
+     * header to `multipart/form-data;boundary=[extracted boundary]`
+     */
+    this._hasFileData = false;
 
     this._setupUrlData();
   }
@@ -613,12 +619,12 @@ class SocketFetch extends ArcEventSource {
       if (this._request.body) {
         this._createFileBuffer()
         .then((fileBuffer) => {
-          let boundary = this._getBoundary(fileBuffer);
-          if (boundary) {
-            let currentCt = this._request.headers.get('content-type');
-            if (!currentCt || (currentCt && currentCt.indexOf('boundary') === -1)) {
-              this._request.headers.set('content-type',
-                'multipart/form-data; boundary=' + boundary);
+          if (this._hasFileData) {
+            //extract boundary and update content type header
+            let boundary = this._getBoundary(fileBuffer);
+            if (boundary) {
+              this._request.headers.set('content-type', 'multipart/form-data; boundary=' +
+                boundary);
             }
           }
           let cl = this._request.headers.get('Content-Length');
@@ -750,6 +756,7 @@ class SocketFetch extends ArcEventSource {
   }
 
   _transferAndCreateFileBuffer() {
+    this._hasFileData = true;
     var body = this._request.body;
     let request = new Request(this._request.url, {
       method: this._request.method,
@@ -764,9 +771,9 @@ class SocketFetch extends ArcEventSource {
    */
   _getBoundary(buffer) {
     var bufferView = new Uint8Array(buffer);
-    var startIndex = this.indexOfSubarray(bufferView, [45, 45, 45, 45, 45, 45]);
+    var startIndex = this.indexOfSubarray(bufferView, [45, 45]);
     var endIndex = this.indexOfSubarray(bufferView, [13, 10]);
-    var boundary = bufferView.subarray(startIndex, endIndex);
+    var boundary = bufferView.subarray(startIndex + 2, endIndex); // it starts with 2x '--'
     var str = '';
     for (var i = 0, len = boundary.length; i < len; ++i) {
       str += String.fromCharCode(boundary[i]);
