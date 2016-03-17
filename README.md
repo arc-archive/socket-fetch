@@ -103,6 +103,19 @@ Additionally the ArcResponse will contain two custom fields:
 * redirects {Set<ArcResponse>} - A list of responses that lead to redirection
 * stats {Set<Object>} - Some stats about the request and response. It is the same as `timings` object in HAR 1.2 specification.
 
+## Import scripts (web workers)
+This library uses web workers. Sometimes it is necessary to change import path of the library.
+By default the script will look in the '/' path for web workers. However bower or combined scripts
+may have been placed in different location so `SocketFetchOptions.importUrl` should be set to
+the real path to locate a file.
+
+```
+/path/to/file/%s
+```
+Keep the %s. The script will replace it with corresponding file name.
+
+When importing the library as a web component it will guess the correct location of the file and will set up it for you. However if you have difficulties with paths feel free to set up paths on your own.
+
 
   [chrome.sockets.tcp]: https://developer.chrome.com/apps/sockets_tcp
   [Advanced Rest Client]: https://github.com/jarrodek/ChromeRestClient

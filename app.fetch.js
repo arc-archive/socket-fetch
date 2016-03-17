@@ -1,4 +1,23 @@
 'use strict';
+/**
+ * This object represents default options for SocketFetch class.
+ * This can be set before class initialize.
+ */
+const SocketFetchOptions = {
+  /**
+   * Use this property to set up script import URL.
+   * This library uses web workders. Sometimes it is necessary to change import path of the
+   * library.
+   * By default the script will look in / path for web workers. However bower or combined scripts
+   * me have been placed in different location so this should be set to locate a file.
+   *
+   * Example:
+   * /path/to/file/%s
+   *
+   * Keep the %s. The script will replace it with corresponding file name.
+   */
+  importUrl: null
+};
 /*******************************************************************************
  * Copyright 2016 Pawel Psztyc, The ARC team
  *
@@ -1174,10 +1193,13 @@ class SocketFetch extends ArcEventSource {
     if (ce.indexOf('gzip') !== -1 || ce.indexOf('deflate') !== -1) {
       return new Promise((resolve, reject) => {
         let workerUrl = 'decompress-worker.js';
-        if (location.pathname === '/components/tasks/demo/index.html') {
+        if (SocketFetchOptions.importUrl) {
+          workerUrl = SocketFetchOptions.importUrl.replace('%s', workerUrl);
+        } else if (location.pathname === '/components/tasks/demo/index.html') {
           // demo, test
           workerUrl = '../decompress-worker.js';
         }
+
         let worker = new Worker(workerUrl);
         worker.onmessage = (e) => {
           resolve(e.data);
