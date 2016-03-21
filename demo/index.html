@@ -86,6 +86,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </div>
   <script>
+  (function() {
+  'use strict';
   var demo = document.querySelector('template');
   demo.logs = [];
   demo.url = '';
@@ -202,6 +204,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.dir(cause);
       });
   };
+  })();
   </script>
 </body>
 

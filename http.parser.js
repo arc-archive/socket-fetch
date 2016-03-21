@@ -1,3 +1,4 @@
+(function() {
 'use strict';
 /*******************************************************************************
  * Copyright 2012 Pawel Psztyc
@@ -18,9 +19,9 @@
  * A HTTP parser contains a helper method to check validity of HTTP data.
  */
 class HttpParser {
-  /** 
+  /**
    * See RFC 7230, Section 3.2.6.
-   * 
+   *
    * @param {String} characters A string to test
    */
   static isValidHTTPToken(characters) {
@@ -40,9 +41,9 @@ class HttpParser {
     return true;
   }
   /**
-   * "A forbidden method is a method that is a byte case-insensitive match" 
+   * "A forbidden method is a method that is a byte case-insensitive match"
    * for one of `CONNECT`, `TRACE`, and `TRACK`."
-   * 
+   *
    * @param {String} method Method value to test
    * @return {Boolean} True if the method name is formbidden.
    */
@@ -61,3 +62,5 @@ class HttpParser {
     return strA.toLowerCase() === strB.toLowerCase();
   }
 }
+window.HttpParser = HttpParser;
+})();

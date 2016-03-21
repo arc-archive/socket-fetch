@@ -1,3 +1,4 @@
+(function() {
 'use strict';
 /*******************************************************************************
  * Copyright 2016 Pawel Psztyc, The ARC team
@@ -82,3 +83,5 @@ class ArcResponse {
     return this._response.text();
   }
 }
+window.ArcResponse = ArcResponse;
+})();

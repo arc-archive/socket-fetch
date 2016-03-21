@@ -1,3 +1,4 @@
+(function() {
 'use strict';
 /**
  * This object represents default options for SocketFetch class.
@@ -34,6 +35,7 @@ const SocketFetchOptions = {
  * the License.
  ******************************************************************************/
 /* global chrome, Request, Headers, ArcEventSource, ArcRequest, ArcResponse */
+
 /**
  * A SocketFetch class is similar to fetch API but it uses chrome.socket as a transport.
  *
@@ -1503,3 +1505,6 @@ class SocketFetch extends ArcEventSource {
     }
   }
 }
+window.SocketFetch = SocketFetch;
+window.SocketFetchOptions = SocketFetchOptions;
+})();
