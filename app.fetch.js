@@ -648,24 +648,46 @@ class SocketFetch extends ArcEventSource {
                 boundary);
             }
           }
-          let cl = this._request.headers.get('Content-Length');
-          if (!cl) {
-            this._request.headers.set('Content-Length', fileBuffer.byteLength);
-          }
-          return this._createMessageBuffer(fileBuffer);
+          return this._addContentLength(fileBuffer)
+          .then((buffer) => this._createMessageBuffer(buffer));
         })
         .then((messageBuffer) => {
           resolve(messageBuffer);
         })
         .catch(reject);
       } else {
-        this._createMessageBuffer().then((messageBuffer) => {
+        this._addContentLength(null)
+        .then(() => this._createMessageBuffer())
+        .then((messageBuffer) => {
           resolve(messageBuffer);
         })
         .catch(reject);
       }
     });
   }
+  /**
+   * Adds the content-length header if required.
+   * This function will do nothing if the request do not carry a payload or
+   * when the content length header is already set.
+   *
+   * @param {ArrayBuffer} buffer Generated message buffer.
+   */
+  _addContentLength(buffer) {
+    if (this._request.method === 'GET') {
+      return Promise.resolve(buffer);
+    }
+    //HEAD must set content length header even if it's not carreing payload.
+    let cl = this._request.headers.get('Content-Length');
+    if (!cl) {
+      if (buffer) {
+        this._request.headers.set('Content-Length', buffer.byteLength);
+      } else {
+        this._request.headers.set('Content-Length', 0);
+      }
+    }
+    return Promise.resolve(buffer);
+  }
+
   /**
    * Create a HTTP message to be send to the server.
    *

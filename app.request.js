@@ -79,6 +79,15 @@ class ArcRequest {
      * @type {String}
      */
     this._url = undefined;
+    /**
+     * Set to true if the request may carry a payload.
+     * It does not means that it is.
+     * This is read only.
+     *
+     * @type {Boolean}
+     */
+    this._payloadRequest = undefined;
+
     if (input instanceof ArcRequest ||
       input instanceof Request) {
       this._assignFromInstance(input);
@@ -137,12 +146,21 @@ class ArcRequest {
       throw new Error(`"${method} HTTP method is unsupported.`);
     }
     this._method = method.toUpperCase();
+    this._payloadRequest = ['GET', 'HEADER'].indexOf(this._method) === -1;
   }
   /**
    * @return {String} Method name.
    */
   get method() {
     return this._method;
+  }
+  /**
+   * Readonly.
+   *
+   * @return {Boolean} True if the request can carry a payload. It does not means that it is.
+   */
+  get payloadRequest() {
+    return this._payloadRequest;
   }
   /**
    * @param {Blob|BufferSource|FormData|URLSearchParams|USVString} body A body to send
