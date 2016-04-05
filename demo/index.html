@@ -111,7 +111,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
     var init = {
       'method': demo.method,
-      'headers': new Headers(headers)
+      'headers': new Headers(headers),
+      'debug': true
     };
     if (demo.method === 'POST') {
       init.headers.append('Content-Type', demo.contentType);

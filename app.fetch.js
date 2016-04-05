@@ -128,6 +128,10 @@ class SocketFetch extends ArcEventSource {
      */
     this._connection = {
       /**
+       * Set to true when the secured connection should be made.
+       */
+      useSSL: false,
+      /**
        * Socket ID the instance is operating on.
        *
        * @type {Number}
@@ -378,7 +382,7 @@ class SocketFetch extends ArcEventSource {
       this.log('Connecting to %s:%d', this._connection.host, this._connection.port);
       this._connection.stats.startTime = Date.now();
       let promise;
-      if (this._connection.port === 443) {
+      if (this._connection.useSSL) {
         promise = this._connectSecure(createInfo.socketId, this._connection.host,
           this._connection.port);
       } else {
@@ -1357,9 +1361,9 @@ class SocketFetch extends ArcEventSource {
    * Set up URL data relevant during making a connection.
    */
   _setupUrlData() {
-    let port = this._request.uri.port();
+    var port = this._request.uri.port();
+    var protocol = this._request.uri.protocol();
     if (!port) {
-      let protocol = this._request.uri.protocol();
       if (protocol in this.protocol2port) {
         port = this.protocol2port[protocol];
       } else {
@@ -1367,8 +1371,13 @@ class SocketFetch extends ArcEventSource {
       }
       this._request.uri.port(port);
     }
-    this._connection.port = parseInt(port);
+    this._connection.port = Number(port);
     this._connection.host = this._request.uri.host().replace(':' + port, '');
+    if (protocol === 'https' || this._connection.port === 443) {
+      this._connection.useSSL = true;
+    } else {
+      this._connection.useSSL = false;
+    }
   }
 
   getCodeMessage(code) {
