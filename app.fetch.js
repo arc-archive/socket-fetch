@@ -429,6 +429,11 @@ class SocketFetch extends ArcEventSource {
           }
           let secureStart = performance.now();
           chrome.sockets.tcp.secure(socketId, (secureResult) => {
+            if (chrome.runtime.lastError) {
+              this.log(chrome.runtime.lastError);
+              reject(chrome.runtime.lastError);
+              return;
+            }
             this._connection.stats.ssl = performance.now() - secureStart;
             if (secureResult !== 0) {
               reject('Unable to secure a connection to host ' + host + ' on port ' + port);
