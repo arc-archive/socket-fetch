@@ -1,38 +1,43 @@
 {
-    "name": "socket-fetch",
-    "version": "1.0.11",
-    "license": "LICENSE.txt",
-    "description": "A HTTP transport based on chrome.socket.tcp API.",
-    "scripts": {
-        "lint": "gulp lint",
-        "live:test": "gulp live:test",
-        "live:demo": "gulp live:demo",
-        "build:test": "gulp build:test",
-        "build:demo": "build:demo"
-    },
-    "devDependencies": {
-        "crisper": "git+https://git@github.com/scarygami/crisper.git",
-        "del": "^1.1.1",
-        "gulp": "^3.8.5",
-        "gulp-batch": "^1.0.5",
-        "gulp-crisper": "^0.0.5",
-        "gulp-flatten": "0.0.4",
-        "gulp-html-extract": "^0.0.3",
-        "gulp-if": "^2.0.0",
-        "gulp-insert-lines": "0.0.4",
-        "gulp-jshint": "^1.6.3",
-        "gulp-jscs": "^3.0.0",
-        "gulp-jscs-stylish": "^1.1.2",
-        "gulp-load-plugins": "^1.1.0",
-        "gulp-replace": "^0.5.3",
-        "gulp-size": "^1.0.0",
-        "jshint-stylish": "^2.0.0",
-        "merge-stream": "^0.1.8",
-        "run-sequence": "^1.0.2",
-        "tiny-lr": "^0.1.6"
-    },
-    "engines": {
-        "node": ">=0.10.0"
-    },
-    "private": false
+  "name": "socket-fetch",
+  "version": "1.0.12",
+  "license": "LICENSE",
+  "description": "A HTTP transport based on chrome.socket.tcp API.",
+  "scripts": {
+    "lint": "gulp lint",
+    "live:test": "gulp live:test",
+    "live:demo": "gulp live:demo",
+    "build:test": "gulp build:test",
+    "build:demo": "build:demo"
+  },
+  "devDependencies": {
+    "conventional-github-releaser": "^1.1.1",
+    "crisper": "git+https://git@github.com/scarygami/crisper.git",
+    "del": "^1.1.1",
+    "gulp": "^3.8.5",
+    "gulp-batch": "^1.0.5",
+    "gulp-bump": "^2.1.0",
+    "gulp-conventional-changelog": "^1.1.0",
+    "gulp-crisper": "^0.0.5",
+    "gulp-flatten": "0.0.4",
+    "gulp-git": "^1.7.1",
+    "gulp-html-extract": "^0.0.3",
+    "gulp-if": "^2.0.0",
+    "gulp-insert-lines": "0.0.4",
+    "gulp-jscs": "^3.0.0",
+    "gulp-jscs-stylish": "^1.1.2",
+    "gulp-jshint": "^1.6.3",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-replace": "^0.5.3",
+    "gulp-size": "^1.0.0",
+    "gulp-util": "^3.0.7",
+    "jshint-stylish": "^2.0.0",
+    "merge-stream": "^0.1.8",
+    "run-sequence": "^1.1.5",
+    "tiny-lr": "^0.1.6"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "private": false
 }
