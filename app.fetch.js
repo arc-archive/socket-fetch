@@ -682,7 +682,8 @@ class SocketFetch extends ArcEventSource {
       return Promise.resolve(buffer);
     }
     //HEAD must set content length header even if it's not carreing payload.
-    let cl = this._request.headers.get('Content-Length');
+    let cl = (this._request.headers && this._request.headers.get &&
+      this._request.headers.get('Content-Length'));
     if (!cl) {
       if (buffer) {
         this._request.headers.set('Content-Length', buffer.byteLength);
@@ -740,7 +741,7 @@ class SocketFetch extends ArcEventSource {
    * Create an ArrayBuffer from payload data.
    */
   _createFileBuffer() {
-    let ct = this._request.headers && this._request.headers.has('content-type') ?
+    let ct = (this._request.headers && this._request.headers.has('content-type')) ?
       this._request.headers.get('content-type') : undefined;
     let blobOptions = {};
     if (ct) {
@@ -974,16 +975,22 @@ class SocketFetch extends ArcEventSource {
       this._connection.headers = '';
     }
     var index = this.indexOfSubarray(data, [13, 10, 13, 10]);
-    if (index === -1) {
+    // https://github.com/jarrodek/socket-fetch/issues/3
+    var enterIndex = this.indexOfSubarray(data, [13, 10]);
+    if (index === -1 && enterIndex !== 0) {
       //end in next chunk
       this._connection.headers += this.arrayBufferToString(data);
       return null;
     }
-    var headersArray = data.subarray(0, index);
-    this._connection.headers += this.arrayBufferToString(headersArray);
+    if (enterIndex !== 0) {
+      var headersArray = data.subarray(0, index);
+      this._connection.headers += this.arrayBufferToString(headersArray);
+    }
     this._parseHeaders();
     this.state = SocketFetch.BODY;
-    data = data.subarray(index + 4);
+    var start = index === -1 ? 0 : index;
+    var move = (enterIndex === 0) ? 2 : 4;
+    data = data.subarray(start + move);
     if (data.length === 0) {
       if (this._connection.headers.has('Content-Length')) {
         // If the server do not close connection and clearly indicate that there are no
