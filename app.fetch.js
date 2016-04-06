@@ -1129,7 +1129,7 @@ class SocketFetch extends ArcEventSource {
       .catch((e) => {
         this._cancelTimer();
         this._mainPromise.reject({
-          'message': e.message
+          'message': e.message || 'Unknown error occurred'
         });
         this._cleanUp();
       });
@@ -1147,7 +1147,7 @@ class SocketFetch extends ArcEventSource {
       .catch((e) => {
         this._cancelTimer();
         this._mainPromise.reject({
-          'message': e.message
+          'message': e.message || 'Unknown error occurred'
         });
         this._cleanUp();
       });
@@ -1266,6 +1266,10 @@ class SocketFetch extends ArcEventSource {
           resolve(e.data);
         };
         worker.onerror = (e) => {
+          var data = e.data;
+          if (!data) {
+            data = new Error('Data decompression worker not found.');
+          }
           reject(e.data);
         };
         worker.postMessage({
