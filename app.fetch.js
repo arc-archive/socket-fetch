@@ -354,7 +354,14 @@ class SocketFetch extends ArcEventSource {
         this._createResponse(true)
         .then(() => {
           resolve(this._response);
-        });
+        })
+        .catch((e) => {
+          this._cancelTimer();
+          reject({
+            'message': e.message
+          });
+          this._cleanUp();
+        });;
         return;
       }
       if (this._connection.started) {
@@ -1118,6 +1125,13 @@ class SocketFetch extends ArcEventSource {
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
+      })
+      .catch((e) => {
+        this._cancelTimer();
+        this._mainPromise.reject({
+          'message': e.message
+        });
+        this._cleanUp();
       });
     } else {
       this._dispatchCustomEvent('loadend');
@@ -1128,6 +1142,13 @@ class SocketFetch extends ArcEventSource {
           response: this._response
         });
         this._mainPromise.resolve(this._response);
+        this._cleanUp();
+      })
+      .catch((e) => {
+        this._cancelTimer();
+        this._mainPromise.reject({
+          'message': e.message
+        });
         this._cleanUp();
       });
     }
