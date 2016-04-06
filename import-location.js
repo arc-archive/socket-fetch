@@ -5,7 +5,8 @@
     var path = url.substr(url.indexOf('/', url.indexOf('/') + 2)).replace('socket-fetch.html','');
     var lastDot = path.lastIndexOf('.');
     if (lastDot !== -1 && path.substr(lastDot + 1) === 'html') {
-      path = path.substr(path.lastIndexOf('/'));
+      // remove element file name path
+      path = path.substr(0, path.lastIndexOf('/') + 1);
     }
     path += '%s';
     SocketFetchOptions.importUrl = path;
