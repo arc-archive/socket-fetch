@@ -1,6 +1,6 @@
 {
   "name": "socket-fetch",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "license": "LICENSE.txt",
   "description": "A HTTP transport based on chrome.socket.tcp API.",
   "authors": [
