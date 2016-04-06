@@ -1129,7 +1129,7 @@ class SocketFetch extends ArcEventSource {
       .catch((e) => {
         this._cancelTimer();
         this._mainPromise.reject({
-          'message': e.message || 'Unknown error occurred'
+          'message': e && e.message || 'Unknown error occurred'
         });
         this._cleanUp();
       });
@@ -1147,7 +1147,7 @@ class SocketFetch extends ArcEventSource {
       .catch((e) => {
         this._cancelTimer();
         this._mainPromise.reject({
-          'message': e.message || 'Unknown error occurred'
+          'message': e && e.message || 'Unknown error occurred'
         });
         this._cleanUp();
       });
