@@ -109,6 +109,10 @@ By default the script will look in the '/' path for web workers. However bower o
 may have been placed in different location so `SocketFetchOptions.importUrl` should be set to
 the real path to locate a file.
 
+The decompress worker uses Zlib and Gzip library. It has hardcoded script import to '../zlib/bin/zlib_and_gzip.min.js'. It means that the script will be included from this path relatively to the web worker file location.
+In most cases the element will be placed in `bower_components` or `components` folder with other bower elements so it resolve paths correctly. However, if you concat JS files or move the element somewhere else it may be the problem.
+In this case you need to move decompression libraries accordingly.
+
 ```
 /path/to/file/%s
 ```
