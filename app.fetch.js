@@ -35,11 +35,7 @@ const SocketFetchOptions = {
  * the License.
  ******************************************************************************/
 /* global chrome, Request, Headers, ArcEventSource, ArcRequest, ArcResponse */
-
-if (typeof URLSearchParams === 'undefined') {
-  URLSearchParams = {};
-}
-
+var URLSearchParams = URLSearchParams || {};
 /**
  * A SocketFetch class is similar to fetch API but it uses chrome.socket as a transport.
  *
