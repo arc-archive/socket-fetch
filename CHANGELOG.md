@@ -1,3 +1,13 @@
+<a name="1.0.23"></a>
+## [1.0.23](https://github.com/jarrodek/socket-fetch/compare/1.0.21...v1.0.23) (2016-04-08)
+
+
+### Fix
+
+* Fixed redirect issue when location header is a relative url  ([05c04db99010a31e04d8d707085ce12b23793dce](https://github.com/jarrodek/socket-fetch/commit/05c04db99010a31e04d8d707085ce12b23793dce)), closes [#5](https://github.com/jarrodek/socket-fetch/issues/5)
+
+
+
 <a name="1.0.21"></a>
 ## [1.0.21](https://github.com/jarrodek/socket-fetch/compare/1.0.12...v1.0.21) (2016-04-08)
 
