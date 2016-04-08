@@ -57,6 +57,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <paper-radio-group selected="{{method}}">
           <paper-radio-button name="GET">GET</paper-radio-button>
           <paper-radio-button name="POST">POST</paper-radio-button>
+          <paper-radio-button name="POST">PUT</paper-radio-button>
+          <paper-radio-button name="DELETE">DELETE</paper-radio-button>
+          <paper-radio-button name="HEAD">HEAD</paper-radio-button>
         </paper-radio-group>
 
         <paper-input-container>
@@ -64,16 +67,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <input is="iron-input" type="text" value="{{contentType::input}}">
         </paper-input-container>
 
+        <paper-textarea value="{{headers}}" label="Headers"></paper-textarea>
         <paper-textarea value="{{payload}}" label="Body"></paper-textarea>
 
         <!-- action buttons -->
         <paper-button on-click="makeRequest">Fetch</paper-button>
       </section>
-      <section class="panel-settings">
 
+      <section class="panel-settings">
         <p>Make request using form data.</p>
         <paper-button on-click="makeRequestFormData">Fetch</paper-button>
-
       </section>
       <section class="logs">
         <h2>Log</h2>
@@ -88,34 +91,64 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
   (function() {
   'use strict';
+
+  function headersToObject(headersString) {
+    if (!headersString || headersString.trim() === '') {
+      return {};
+    }
+    if (typeof headersString !== 'string') {
+      throw new Error('Headers must be an instance of String.');
+    }
+    var result = {};
+    const headers = headersString.split(/\n/gim);
+
+    for (let i = 0, len = headers.length; i < len; i++) {
+      let line = headers[i].trim();
+      if (line === '') {
+        continue;
+      }
+      let sepPosition = line.indexOf(':');
+      if (sepPosition === -1) {
+        result[line] = '';
+        continue;
+      }
+      let name = line.substr(0, sepPosition);
+      let value = line.substr(sepPosition + 1).trim();
+      if (name in result) {
+        result[name] += '; ' + value;
+      } else {
+        result[name] += value;
+      }
+    }
+    return result;
+  };
+
   var demo = document.querySelector('template');
   demo.logs = [];
   demo.url = '';
-  demo.contentType = 'application/json';
   demo.payload = '';
+  demo.headers = '';
   demo.method = 'POST';
 
   demo.addEventListener('dom-change', function() {
     demo.set('url', 'https://chromerestclient.appspot.com/test?p=json');
-    demo.set('contentType', 'application/json');
     demo.set('payload', '{"test":"request"}');
     demo.set('method', 'POST');
+    demo.set('headers',
+    `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate
+Accept-Language: en-US,en;q=0.8,
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2652.0 Safari/537.36
+Content-Type: application/json
+    `);
   });
   demo.makeRequest = function() {
-    var headers = {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Encoding': 'gzip, deflate',
-      'accept-language': 'en-US,en;q=0.8',
-      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' +
-        'Chrome/50.0.2652.0 Safari/537.36'
-    };
     var init = {
       'method': demo.method,
-      'headers': new Headers(headers),
+      'headers': new Headers(headersToObject(demo.headers)),
       'debug': true
     };
     if (demo.method === 'POST') {
-      init.headers.append('Content-Type', demo.contentType);
       init.body = demo.payload;
     }
     demo.push('logs', {

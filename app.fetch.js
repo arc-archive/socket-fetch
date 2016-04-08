@@ -759,8 +759,8 @@ class SocketFetch extends ArcEventSource {
       blobOptions.type = ct;
     }
     var body = this._request.body;
-    if (body instanceof FormData ||
-      body instanceof URLSearchParams) {
+    if (body instanceof FormData /*||
+      body instanceof URLSearchParams*/) {
       return this._transferAndCreateFileBuffer();
     }
     return new Promise((resolve, reject) => {
@@ -1002,6 +1002,15 @@ class SocketFetch extends ArcEventSource {
     var start = index === -1 ? 0 : index;
     var move = (enterIndex === 0) ? 2 : 4;
     data = data.subarray(start + move);
+
+    if (this._request.method === 'HEAD') {
+      // there will be no payload anyway.
+      window.setTimeout(() => {
+        this.onResponseReady();
+      }, 0);
+      return null;
+    }
+
     if (data.length === 0) {
       if (this._connection.headers.has('Content-Length')) {
         // If the server do not close connection and clearly indicate that there are no
