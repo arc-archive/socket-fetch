@@ -1118,6 +1118,16 @@ class SocketFetch extends ArcEventSource {
       if (this._connection.headers && this._connection.headers.has('Location')) {
         location = this._connection.headers.get('Location');
       }
+      // https://github.com/jarrodek/socket-fetch/issues/5
+      let u = URI(location);
+      let protocol = u.protocol();
+      if (protocol === '') {
+        let path = u.path();
+        if (path && path[0] !== '/') {
+          path = '/' + path;
+        }
+        location = this._request.uri.origin() + path;
+      }
       // this is a redirect;
       this._dispatchCustomEvent('beforeredirect', {
         location: location
@@ -1131,6 +1141,7 @@ class SocketFetch extends ArcEventSource {
         return this._cleanUpRedirect();
       })
       .then(() => {
+       
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
