@@ -1,4 +1,18 @@
 <a name="1.0.21"></a>
+## [1.0.21](https://github.com/jarrodek/socket-fetch/compare/1.0.12...v1.0.21) (2016-04-08)
+
+
+### Fix
+
+* Fixes HEAD tyle of request  ([47f0e3ba5137d31827cbbeb8ac6dd358852573a3](https://github.com/jarrodek/socket-fetch/commit/47f0e3ba5137d31827cbbeb8ac6dd358852573a3)), closes [#4](https://github.com/jarrodek/socket-fetch/issues/4)
+
+### Update
+
+* Changed hows the element recognize the import location ([4986de84ee19524bb28eec5b7cd9556503b38b02](https://github.com/jarrodek/socket-fetch/commit/4986de84ee19524bb28eec5b7cd9556503b38b02))
+
+
+
+<a name="1.0.21"></a>
 ## [1.0.21](https://github.com/jarrodek/socket-fetch/compare/1.0.19...v1.0.21) (2016-04-07)
 
 
