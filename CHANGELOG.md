@@ -1,3 +1,14 @@
+<a name="1.0.25"></a>
+## [1.0.25](https://github.com/jarrodek/socket-fetch/compare/1.0.21...v1.0.25) (2016-04-11)
+
+
+### Fix
+
+* fixed invalid variable name in the decompression worker ([cc92a54417f8046c6e17b0f3f9346a745c028523](https://github.com/jarrodek/socket-fetch/commit/cc92a54417f8046c6e17b0f3f9346a745c028523))
+* Fixed redirect issue when location header is a relative url  ([05c04db99010a31e04d8d707085ce12b23793dce](https://github.com/jarrodek/socket-fetch/commit/05c04db99010a31e04d8d707085ce12b23793dce)), closes [#5](https://github.com/jarrodek/socket-fetch/issues/5)
+
+
+
 <a name="1.0.24"></a>
 ## [1.0.24](https://github.com/jarrodek/socket-fetch/compare/1.0.21...v1.0.24) (2016-04-08)
 
