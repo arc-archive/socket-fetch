@@ -1,3 +1,13 @@
+<a name="1.0.28"></a>
+## [1.0.28](https://github.com/jarrodek/socket-fetch/compare/1.0.27...v1.0.28) (2016-04-12)
+
+
+### Fixed
+
+* Now the library will follow redirection only when the status code is 301, 307 or 308 ([1c1b680ede0929ff00f7e9b265a3ab854a8bbed7](https://github.com/jarrodek/socket-fetch/commit/1c1b680ede0929ff00f7e9b265a3ab854a8bbed7))
+
+
+
 <a name="1.0.27"></a>
 ## [1.0.27](https://github.com/jarrodek/socket-fetch/compare/1.0.26...v1.0.27) (2016-04-12)
 
