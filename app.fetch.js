@@ -571,7 +571,6 @@ class SocketFetch extends ArcEventSource {
     if (['GET', 'HEADER'].indexOf(opts.method.toUpperCase()) !== -1) {
       delete opts.body;
     }
-    opts.messageSent = this._connection.messageSent;
     return new ArcRequest(url, opts);
   }
   /**
@@ -1150,7 +1149,6 @@ class SocketFetch extends ArcEventSource {
         return this._cleanUpRedirect();
       })
       .then(() => {
-
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
@@ -1164,6 +1162,7 @@ class SocketFetch extends ArcEventSource {
       });
     } else {
       this._dispatchCustomEvent('loadend');
+      this._request.messageSent = this._connection.messageSent;
       this._createResponse(true)
       .then(() => {
         this._cancelTimer();
