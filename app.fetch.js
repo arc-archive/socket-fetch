@@ -1113,7 +1113,8 @@ class SocketFetch extends ArcEventSource {
       return;
     }
     this.state = SocketFetch.DONE;
-    if (this._connection.status >= 300 && this._connection.status < 400) {
+    if (this._connection.status === 301 || this._connection.status === 307 ||
+        this._connection.status === 308) {
       if (this.redirect === 'error') {
         this._mainPromise.reject({
           'message': 'Redirects are not allowed',
