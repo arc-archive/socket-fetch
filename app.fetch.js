@@ -156,7 +156,7 @@ class SocketFetch extends ArcEventSource {
        * @type {Number}
        * @default 80
        */
-      post: 80,
+      port: 80,
       /**
        * A integer representing status code of the response.
        *
@@ -208,6 +208,13 @@ class SocketFetch extends ArcEventSource {
        * @type {Number}
        */
       chunkSize: undefined,
+      /**
+       * Message sent to the remote machine as a string of source message.
+       * If the request consisted of binnary data it will be presented as a string.
+       *
+       * @type {String}
+       */
+      messageSent: undefined,
       /**
        * Some stats about the connection
        */
@@ -564,6 +571,7 @@ class SocketFetch extends ArcEventSource {
     if (['GET', 'HEADER'].indexOf(opts.method.toUpperCase()) !== -1) {
       delete opts.body;
     }
+    opts.messageSent = this._connection.messageSent;
     return new ArcRequest(url, opts);
   }
   /**
@@ -639,11 +647,12 @@ class SocketFetch extends ArcEventSource {
     }
     this.generateMessage()
     .then((buffer) => {
+      let message = this.arrayBufferToString(buffer);
       if (this.debug) {
-        let debugMsg = this.arrayBufferToString(buffer);
-        this.log('Generated message to send\n', debugMsg);
+        this.log('Generated message to send\n', message);
       }
       this.log('Sending message.');
+      this._connection.messageSent = message;
       this._connection.stats._messageSending = performance.now();
       chrome.sockets.tcp.send(this._connection.socketId, buffer, this.onSend.bind(this));
     });
@@ -906,7 +915,7 @@ class SocketFetch extends ArcEventSource {
       this.onResponseReady();
       return;
     }
-    var message = this.getCodeMessage(code);
+    var message = '[chrome socket error]: ' + this.getCodeMessage(code);
     this.log('readSocketError:', message, code);
     if (this.state !== SocketFetch.DONE && this._mainPromise.reject) {
       let error = new Error(message);
@@ -1141,7 +1150,7 @@ class SocketFetch extends ArcEventSource {
         return this._cleanUpRedirect();
       })
       .then(() => {
-       
+
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
@@ -1202,6 +1211,7 @@ class SocketFetch extends ArcEventSource {
       this._connection.host = undefined;
       this._connection.port = undefined;
       this._response = undefined;
+      this._connection.messageSent = undefined;
       this._connection.stats.startTime = undefined;
       this._connection.stats.connect = undefined;
       this._connection.stats.send = undefined;

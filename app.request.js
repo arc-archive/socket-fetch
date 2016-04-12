@@ -87,6 +87,12 @@ class ArcRequest {
      * @type {Boolean}
      */
     this._payloadRequest = undefined;
+    /**
+     * A string representation of the message sent to the server.
+     *
+     * @type {String}
+     */
+    this._messageSent = undefined;
 
     if (input instanceof ArcRequest ||
       input instanceof Request) {
@@ -117,6 +123,9 @@ class ArcRequest {
     if ('timeout' in init) {
       this.timeout = init.timeout;
     }
+    if ('messageSent' in init) {
+      this.messageSent = init.messageSent;
+    }
   }
   /**
    * Assign initial value from existing {@link ArcRequest} object
@@ -132,6 +141,7 @@ class ArcRequest {
     this._body = input._body;
     this._redirect = input._redirect;
     this._timeout = input._timeout;
+    this._messageSent = input._messageSent;
   }
   /**
    * Sets a HTTP method to this {@link ArcRequest} object.
@@ -233,6 +243,14 @@ class ArcRequest {
 
   get timeout() {
     return this._timeout;
+  }
+
+  set messageSent(message) {
+    this._messageSent = message;
+  }
+
+  get messageSent() {
+    return this._messageSent;
   }
 }
 window.ArcRequest = ArcRequest;
