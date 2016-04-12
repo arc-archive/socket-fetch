@@ -1,3 +1,13 @@
+<a name="1.0.27"></a>
+## [1.0.27](https://github.com/jarrodek/socket-fetch/compare/1.0.26...v1.0.27) (2016-04-12)
+
+
+### Fixed
+
+* An issue when the messageSent was initialized in wrong block ([87ae946909aca857667894adf4812d1f61837dc9](https://github.com/jarrodek/socket-fetch/commit/87ae946909aca857667894adf4812d1f61837dc9))
+
+
+
 <a name="1.0.26"></a>
 ## [1.0.26](https://github.com/jarrodek/socket-fetch/compare/1.0.19...v1.0.26) (2016-04-12)
 
