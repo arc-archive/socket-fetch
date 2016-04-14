@@ -580,7 +580,13 @@ class SocketFetch extends ArcEventSource {
    * @return {ArcResponse} A response object.
    */
   _createResponse(includeRedirects) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      var status = this._connection.status;
+      if (status < 200 || status > 599) {
+        reject(new Error(`The response status "${status}" is not allowed.
+          See HTTP spec for more details: https://tools.ietf.org/html/rfc2616#section-6.1.1`));
+        return;
+      }
       if (this.aborted) {
         return;
       }
@@ -1011,8 +1017,12 @@ class SocketFetch extends ArcEventSource {
     var move = (enterIndex === 0) ? 2 : 4;
     data = data.subarray(start + move);
 
+    return this._postHeaders(data);
+  }
+  // Check the response headers and end the request if nescesary.
+  _postHeaders(data) {
     if (this._request.method === 'HEAD') {
-      // there will be no payload anyway.
+      // there will be no payload anyway. (spec defined)
       window.setTimeout(() => {
         this.onResponseReady();
       }, 0);
@@ -1026,13 +1036,23 @@ class SocketFetch extends ArcEventSource {
         let length = Number(this._connection.headers.get('Content-Length'));
         // NaN never equals NaN. This is faster.
         if (length === length && length === 0) {
-          this.onResponseReady();
+          window.setTimeout(() => {
+            this.onResponseReady();
+          }, 0);
         }
+      } else if (!this._connection.headers.has('Transfer-Encoding') ||
+        !this._connection.headers.get('Transfer-Encoding')) {
+        // Fix for https://github.com/jarrodek/socket-fetch/issues/6
+        // There is no body in the response.
+        window.setTimeout(() => {
+          this.onResponseReady();
+        }, 0);
       }
       return null;
     }
     return data;
   }
+
   /**
    * Process data.
    *
@@ -1113,8 +1133,12 @@ class SocketFetch extends ArcEventSource {
       return;
     }
     this.state = SocketFetch.DONE;
-    if (this._connection.status === 301 || this._connection.status === 307 ||
-        this._connection.status === 308) {
+    var location = null;
+    if (this._connection.headers && this._connection.headers.has('Location')) {
+      location = this._connection.headers.get('Location');
+    }
+    var status = this._connection.status;
+    if (status >= 300 && status < 400 && !!location) { //redirect
       if (this.redirect === 'error') {
         this._mainPromise.reject({
           'message': 'Redirects are not allowed',
@@ -1122,10 +1146,6 @@ class SocketFetch extends ArcEventSource {
         });
         this._cleanUp();
         return;
-      }
-      let location = null;
-      if (this._connection.headers && this._connection.headers.has('Location')) {
-        location = this._connection.headers.get('Location');
       }
       // https://github.com/jarrodek/socket-fetch/issues/5
       let u = URI(location);

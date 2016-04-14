@@ -60,6 +60,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-radio-button name="POST">PUT</paper-radio-button>
           <paper-radio-button name="DELETE">DELETE</paper-radio-button>
           <paper-radio-button name="HEAD">HEAD</paper-radio-button>
+          <paper-radio-button name="OPTIONS">OPTIONS</paper-radio-button>
         </paper-radio-group>
 
         <paper-input-container>
@@ -117,7 +118,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (name in result) {
         result[name] += '; ' + value;
       } else {
-        result[name] += value;
+        result[name] = value;
       }
     }
     return result;
