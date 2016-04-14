@@ -1,3 +1,13 @@
+<a name="1.0.29"></a>
+## [1.0.29](https://github.com/jarrodek/socket-fetch/compare/1.0.28...v1.0.29) (2016-04-14)
+
+
+### Fix
+
+* Fixes an issue when the response do not contain response payload  ([e29b94b243bc64c6ed936f01d855215f47159f2a](https://github.com/jarrodek/socket-fetch/commit/e29b94b243bc64c6ed936f01d855215f47159f2a)), closes [#6](https://github.com/jarrodek/socket-fetch/issues/6)
+
+
+
 <a name="1.0.28"></a>
 ## [1.0.28](https://github.com/jarrodek/socket-fetch/compare/1.0.27...v1.0.28) (2016-04-12)
 

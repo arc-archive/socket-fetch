@@ -54,7 +54,7 @@ function getPackageJsonVersion() {
 
 gulp.task('create-new-tag', function(cb) {
   var version = getPackageJsonVersion();
-  git.tag(version, 'Created Tag for version: ' + version, function(error) {
+  git.tag(version, 'Created Tag for version: ' + version, {signed: true}, function(error) {
     if (error) {
       return cb(error);
     }
