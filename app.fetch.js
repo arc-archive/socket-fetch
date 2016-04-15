@@ -582,7 +582,7 @@ class SocketFetch extends ArcEventSource {
   _createResponse(includeRedirects) {
     return new Promise((resolve, reject) => {
       var status = this._connection.status;
-      if (status < 200 || status > 599) {
+      if (status < 100 || status > 599) {
         reject(new Error(`The response status "${status}" is not allowed.
           See HTTP spec for more details: https://tools.ietf.org/html/rfc2616#section-6.1.1`));
         return;

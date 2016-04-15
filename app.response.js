@@ -31,6 +31,12 @@ class ArcResponse {
    * See https://developer.mozilla.org/en-US/docs/Web/API/Response/Response for more information.
    */
   constructor(body, init) {
+    this._status = init.status;
+
+    // not sure why Response object do not accept 1xx status codes... 
+    if (init.status >= 100 && init.status < 200) {
+      init.status = 200;
+    }
     this._response = new Response(body, init);
     if (!(init.redirects instanceof Set)) {
       init.redirects = new Set(init.redirects);
@@ -43,7 +49,7 @@ class ArcResponse {
     return this._response.type;
   }
   get status() {
-    return this._response.status;
+    return this._status;
   }
   get statusText() {
     return this._response.statusText;
