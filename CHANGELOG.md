@@ -1,3 +1,26 @@
+<a name="1.0.30"></a>
+## [1.0.30](https://github.com/jarrodek/socket-fetch/compare/1.0.25...v1.0.30) (2016-04-15)
+
+
+### Fix
+
+* Fixes an issue when the response do not contain response payload  ([e29b94b243bc64c6ed936f01d855215f47159f2a](https://github.com/jarrodek/socket-fetch/commit/e29b94b243bc64c6ed936f01d855215f47159f2a)), closes [#6](https://github.com/jarrodek/socket-fetch/issues/6)
+
+### Fixed
+
+* An issue when the messageSent was initialized in wrong block ([87ae946909aca857667894adf4812d1f61837dc9](https://github.com/jarrodek/socket-fetch/commit/87ae946909aca857667894adf4812d1f61837dc9))
+* Now the library will follow redirection only when the status code is 301, 307 or 308 ([1c1b680ede0929ff00f7e9b265a3ab854a8bbed7](https://github.com/jarrodek/socket-fetch/commit/1c1b680ede0929ff00f7e9b265a3ab854a8bbed7))
+
+### Fixes
+
+* response status >= 100 and status < 200 ([c084c66c65e0af427f4fc4acd52bc551fdbcd9d1](https://github.com/jarrodek/socket-fetch/commit/c084c66c65e0af427f4fc4acd52bc551fdbcd9d1))
+
+### Update
+
+* Added  property to ArcRequest object that is a string representation of a message sent to server ([022e4b6090a0b758dc85ba50ec2bbebc061998be](https://github.com/jarrodek/socket-fetch/commit/022e4b6090a0b758dc85ba50ec2bbebc061998be))
+
+
+
 <a name="1.0.29"></a>
 ## [1.0.29](https://github.com/jarrodek/socket-fetch/compare/1.0.28...v1.0.29) (2016-04-14)
 
