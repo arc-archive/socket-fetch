@@ -1,3 +1,13 @@
+<a name="1.0.31"></a>
+## [1.0.31](https://github.com/jarrodek/socket-fetch/compare/1.0.30...v1.0.31) (2016-04-21)
+
+
+### Fix
+
+* Added null check before constructing the Response object. Also added reference to the original response ([a383fbc1f94e70db26dd631ff475aa4c2f50ae97](https://github.com/jarrodek/socket-fetch/commit/a383fbc1f94e70db26dd631ff475aa4c2f50ae97))
+
+
+
 <a name="1.0.30"></a>
 ## [1.0.30](https://github.com/jarrodek/socket-fetch/compare/1.0.25...v1.0.30) (2016-04-15)
 
