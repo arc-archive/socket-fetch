@@ -33,11 +33,15 @@ class ArcResponse {
   constructor(body, init) {
     this._status = init.status;
 
-    // not sure why Response object do not accept 1xx status codes... 
+    // not sure why Response object do not accept 1xx status codes...
     if (init.status >= 100 && init.status < 200) {
       init.status = 200;
     }
+    if (body === null) {
+      body = '';
+    }
     this._response = new Response(body, init);
+    this.rawResponse = body;
     if (!(init.redirects instanceof Set)) {
       init.redirects = new Set(init.redirects);
     }
