@@ -1,3 +1,18 @@
+<a name="1.0.32"></a>
+## [1.0.32](https://github.com/jarrodek/socket-fetch/compare/1.0.29...v1.0.32) (2016-04-23)
+
+
+### Fix
+
+* Added null check before constructing the Response object. Also added reference to the original response ([a383fbc1f94e70db26dd631ff475aa4c2f50ae97](https://github.com/jarrodek/socket-fetch/commit/a383fbc1f94e70db26dd631ff475aa4c2f50ae97))
+* The host header will now will contain port value if not a default one to comply with thte spec.  ([fd042cb9ef77a3519a2198a6970b80eb0dbd4c71](https://github.com/jarrodek/socket-fetch/commit/fd042cb9ef77a3519a2198a6970b80eb0dbd4c71)), closes [#8](https://github.com/jarrodek/socket-fetch/issues/8)
+
+### Fixes
+
+* response status >= 100 and status < 200 ([c084c66c65e0af427f4fc4acd52bc551fdbcd9d1](https://github.com/jarrodek/socket-fetch/commit/c084c66c65e0af427f4fc4acd52bc551fdbcd9d1))
+
+
+
 <a name="1.0.31"></a>
 ## [1.0.31](https://github.com/jarrodek/socket-fetch/compare/1.0.30...v1.0.31) (2016-04-21)
 
