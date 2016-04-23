@@ -34,8 +34,11 @@ class ArcResponse {
     this._status = init.status;
 
     // not sure why Response object do not accept 1xx status codes...
-    if (init.status >= 100 && init.status < 200) {
+    if (init.status >= 100 && init.status < 200 || init.status === 0) {
       init.status = 200;
+    } else if (init.status === undefined) {
+      init.status = 200;
+      init.statusText = 'Request error';
     }
     if (body === null) {
       body = '';
