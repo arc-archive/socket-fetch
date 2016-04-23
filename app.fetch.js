@@ -368,7 +368,7 @@ class SocketFetch extends ArcEventSource {
             'message': e.message
           });
           this._cleanUp();
-        });;
+        });
         return;
       }
       if (this._connection.started) {
@@ -585,6 +585,10 @@ class SocketFetch extends ArcEventSource {
       if (status < 100 || status > 599) {
         reject(new Error(`The response status "${status}" is not allowed.
           See HTTP spec for more details: https://tools.ietf.org/html/rfc2616#section-6.1.1`));
+        return;
+      } else if (status === undefined) {
+        reject(new Error(`The response status is empty.
+          It means that the successful connection wasn't made. Check your request parameters.`));
         return;
       }
       if (this.aborted) {
