@@ -654,7 +654,7 @@ class SocketFetch extends ArcEventSource {
     .then((buffer) => {
       let message = this.arrayBufferToString(buffer);
       if (this.debug) {
-        this.log('Generated message to send\n', message);
+        this.log('Generated message to send\n' + message);
       }
       this.log('Sending message.');
       this._connection.messageSent = message;
@@ -736,7 +736,13 @@ class SocketFetch extends ArcEventSource {
       path += hash;
     }
     headers.push(this._request.method + ' ' + path + ' HTTP/1.1');
-    headers.push('HOST: ' + this._connection.host);
+    var port = this._connection.port;
+    var hostValue = this._connection.host;
+    var defaultPorts = [80, 443];
+    if (defaultPorts.indexOf(port) === -1) {
+      hostValue += ':' + port;
+    }
+    headers.push('HOST: ' + hostValue);
     if (this._request.headers) {
       this._request.headers.forEach((value, key) => {
         headers.push(key + ': ' + value);
@@ -985,6 +991,7 @@ class SocketFetch extends ArcEventSource {
       this._connection.status = 0;
     }
     this._connection.statusMessage = statusLine.substr(statusLine.indexOf(' ') + 1);
+    this.log('Received status', this._connection.status, this._connection.statusMessage);
     this.state = SocketFetch.HEADERS;
     return data;
   }
