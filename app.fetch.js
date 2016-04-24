@@ -1175,10 +1175,19 @@ class SocketFetch extends ArcEventSource {
       if (!this.redirects) {
         this.redirects = new Set();
       }
+
       this._createResponse(false)
       .then(() => {
         this.redirects.add(this._response);
         return this._cleanUpRedirect();
+      })
+      .then(() => {
+        // TODO: extract cookies and if cookies matches domain and path set cookies again with
+        // redirected request.
+        // if (this._connection.headers && this._connection.headers.has('Location')) {
+        //   location = this._connection.headers.get('Location');
+        // }
+        
       })
       .then(() => {
         this._request.url = location;
