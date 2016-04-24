@@ -1,3 +1,13 @@
+<a name="1.0.36"></a>
+## [1.0.36](https://github.com/jarrodek/socket-fetch/compare/1.0.35...v1.0.36) (2016-04-24)
+
+
+### Fix
+
+* error on custom HTTP method ([f0446b9a08a9ede657b755ba5d22340f4a959848](https://github.com/jarrodek/socket-fetch/commit/f0446b9a08a9ede657b755ba5d22340f4a959848))
+
+
+
 <a name="1.0.35"></a>
 ## [1.0.35](https://github.com/jarrodek/socket-fetch/compare/1.0.34...v1.0.35) (2016-04-24)
 
