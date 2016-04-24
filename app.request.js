@@ -149,11 +149,14 @@ class ArcRequest {
    * @param {String} method A method to set.
    */
   set method(method) {
+    if (method) {
+      method = method.trim();
+    }
     if (!HttpParser.isValidHTTPToken(method)) {
-      throw new Error(`"${method} is not a valid HTTP method.`);
+      throw new Error(`"${method}" is not a valid HTTP method.`);
     }
     if (HttpParser.isForbiddenMethod(method)) {
-      throw new Error(`"${method} HTTP method is unsupported.`);
+      throw new Error(`"${method}" HTTP method is unsupported.`);
     }
     this._method = method.toUpperCase();
     this._payloadRequest = ['GET', 'HEADER'].indexOf(this._method) === -1;
