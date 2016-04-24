@@ -155,9 +155,9 @@ class ArcRequest {
     if (!HttpParser.isValidHTTPToken(method)) {
       throw new Error(`"${method}" is not a valid HTTP method.`);
     }
-    if (HttpParser.isForbiddenMethod(method)) {
-      throw new Error(`"${method}" HTTP method is unsupported.`);
-    }
+    // if (HttpParser.isForbiddenMethod(method)) {
+    //   throw new Error(`"${method}" HTTP method is unsupported.`);
+    // }
     this._method = method.toUpperCase();
     this._payloadRequest = ['GET', 'HEADER'].indexOf(this._method) === -1;
   }
