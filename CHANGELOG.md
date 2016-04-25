@@ -1,3 +1,13 @@
+<a name="1.0.38"></a>
+## [1.0.38](https://github.com/jarrodek/socket-fetch/compare/1.0.37...v1.0.38) (2016-04-25)
+
+
+### Update
+
+* Added requestUrl for the response that has been redirected. ([86c08d9d97260bb27fb3c0905e614558da90bd60](https://github.com/jarrodek/socket-fetch/commit/86c08d9d97260bb27fb3c0905e614558da90bd60))
+
+
+
 <a name="1.0.37"></a>
 ## [1.0.37](https://github.com/jarrodek/socket-fetch/compare/1.0.31...v1.0.37) (2016-04-25)
 
