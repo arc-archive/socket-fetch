@@ -1158,49 +1158,7 @@ class SocketFetch extends ArcEventSource {
         this._cleanUp();
         return;
       }
-      // https://github.com/jarrodek/socket-fetch/issues/5
-      let u = URI(location);
-      let protocol = u.protocol();
-      if (protocol === '') {
-        let path = u.path();
-        if (path && path[0] !== '/') {
-          path = '/' + path;
-        }
-        location = this._request.uri.origin() + path;
-      }
-      // this is a redirect;
-      this._dispatchCustomEvent('beforeredirect', {
-        location: location
-      });
-      if (!this.redirects) {
-        this.redirects = new Set();
-      }
-
-      this._createResponse(false)
-      .then(() => {
-        this.redirects.add(this._response);
-        return this._cleanUpRedirect();
-      })
-      .then(() => {
-        // TODO: extract cookies and if cookies matches domain and path set cookies again with
-        // redirected request.
-        // if (this._connection.headers && this._connection.headers.has('Location')) {
-        //   location = this._connection.headers.get('Location');
-        // }
-        
-      })
-      .then(() => {
-        this._request.url = location;
-        this._setupUrlData();
-        this._createConnection();
-      })
-      .catch((e) => {
-        this._cancelTimer();
-        this._mainPromise.reject({
-          'message': e && e.message || 'Unknown error occurred'
-        });
-        this._cleanUp();
-      });
+      this._redirectRequest(location);
     } else {
       this._dispatchCustomEvent('loadend');
       this._request.messageSent = this._connection.messageSent;
@@ -1222,6 +1180,72 @@ class SocketFetch extends ArcEventSource {
       });
     }
   }
+  /**
+   * Creates a response and adds it to the redirects list and redirects the request to the
+   * new location.
+   */
+  _redirectRequest(location) {
+    // https://github.com/jarrodek/socket-fetch/issues/5
+    let u = URI(location);
+    let protocol = u.protocol();
+    if (protocol === '') {
+      let path = u.path();
+      if (path && path[0] !== '/') {
+        path = '/' + path;
+      }
+      location = this._request.uri.origin() + path;
+    }
+    // this is a redirect;
+    this._dispatchCustomEvent('beforeredirect', {
+      location: location
+    });
+    if (!this.redirects) {
+      this.redirects = new Set();
+    }
+    var responseCookies = null;
+    if (this._connection.headers && this._connection.headers.has('set-cookie')) {
+      responseCookies = this._connection.headers.get('set-cookie');
+    }
+
+    this._createResponse(false)
+    .then(() => {
+      this.redirects.add(this._response);
+      return this._cleanUpRedirect();
+    })
+    .then(() => {
+      if (!responseCookies) {
+        return;
+      }
+      var newParser = new Cookies(responseCookies, location);
+      newParser.filter();
+      newParser.clearExpired();
+      if (this._request.headers.has('Cookie')) {
+        var oldCookies = this._request.headers.get('Cookie');
+        var oldParser = new Cookies(oldCookies, location);
+        oldParser.filter();
+        oldParser.clearExpired();
+        oldParser.merge(newParser);
+        newParser = oldParser;
+      }
+      var str = newParser.toString(true);
+      if (str) {
+        this._request.headers.set('Cookie', str);
+      }
+    })
+    .then(() => {
+      this._request.url = location;
+      this._setupUrlData();
+      this._createConnection();
+    })
+    .catch((e) => {
+      this._cancelTimer();
+      this._mainPromise.reject({
+        'message': e && e.message || 'Unknown error occurred'
+      });
+      this._cleanUp();
+    });
+  }
+
   /**
    * After the connection is closed an result returned this method will release resources.
    */
