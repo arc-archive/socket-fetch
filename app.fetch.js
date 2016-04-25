@@ -1206,9 +1206,9 @@ class SocketFetch extends ArcEventSource {
     if (this._connection.headers && this._connection.headers.has('set-cookie')) {
       responseCookies = this._connection.headers.get('set-cookie');
     }
-
     this._createResponse(false)
     .then(() => {
+      this._response.requestUrl = this._request.url;
       this.redirects.add(this._response);
       return this._cleanUpRedirect();
     })
