@@ -22,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
 
   <link rel="import" href="../socket-fetch.html">
+  <script src="../third_party/forge.bundle.js"></script>
   <style is="custom-style">
   html,
   body {
@@ -129,19 +130,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   demo.url = '';
   demo.payload = '';
   demo.headers = '';
-  demo.method = 'POST';
+  demo.method = 'GET';
 
   demo.addEventListener('dom-change', function() {
     // demo.set('url', 'https://chromerestclient.appspot.com/test?p=json');
-    demo.set('url', 'http://localhost:8081/redirect');
-    demo.set('payload', '{"test":"request"}');
-    demo.set('method', 'POST');
+    // demo.set('url', 'http://localhost:8081/redirect');
+    // demo.set('url', 'https://wrong.host.badssl.com/');
+    demo.url = 'https://localhost:3000/';
+    demo.set('payload', ''); //{"test":"request"}
+    demo.set('method', 'GET');
     demo.set('headers',
     `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate
 Accept-Language: en-US,en;q=0.8,
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2652.0 Safari/537.36
-Content-Type: application/json
     `);
   });
   demo.makeRequest = function() {
@@ -200,7 +202,8 @@ Content-Type: application/json
     var init = {
       'method': 'POST',
       'headers': new Headers(headers),
-      'body': fd
+      'body': fd,
+      'debug': true
     };
     demo.push('logs', {
       log: 'Making a request.'

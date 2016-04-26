@@ -16,6 +16,7 @@
   "newcap": false,
   "globals": {
     "chrome": true,
-    "URLSearchParams": true
+    "URLSearchParams": true,
+    "forge": true
   }
 }

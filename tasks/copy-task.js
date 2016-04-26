@@ -13,6 +13,7 @@ function copyTask(type, destDir, live, element) {
     './*.js',
     './*.css',
     './' + type + '/**',
+    './third_party/**',
     '!./gulpfile.js',
     '!./index.html',
   ], {

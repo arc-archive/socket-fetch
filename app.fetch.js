@@ -397,7 +397,9 @@ class SocketFetch extends ArcEventSource {
       this._connection.stats.startTime = Date.now();
       let promise;
       if (this._connection.useSSL) {
-        promise = this._connectSecure(createInfo.socketId, this._connection.host,
+        // promise = this._connectSecure(createInfo.socketId, this._connection.host,
+        //   this._connection.port);
+        promise = this._connectInsecure(createInfo.socketId, this._connection.host,
           this._connection.port);
       } else {
         promise = this._connect(createInfo.socketId, this._connection.host, this._connection.port);
@@ -463,6 +465,114 @@ class SocketFetch extends ArcEventSource {
       });
     });
   }
+  /**
+   * This will use the Forge library to make an insecure connection to the remote server.
+   * The insecure connection is when the server sends an invalid certificate over SSL.
+   * It may be invalid CN, expired or whatever.
+   *
+   * This function will attempt to connect anyway bypassing security.
+   *
+   * If you want to use this function in your project:
+   * I strongly discourage to do so. The library was created for a developer tool to intentionally
+   * connect to servers with invalid certificates. It is huge secority riks to use it in other
+   * tools.
+   *
+   * @param {Number} socketId ID of the socket that the instance is operating on.
+   * @param {String} host A host name to connect to
+   * @param {Number} port A port number to connect to.
+   *
+   * @return {Promise} Fulfilled promise when connection has been made. Rejected promise will
+   * contain an Error object with description message.
+   */
+  _connectInsecure(socketId, host, port) {
+    return new Promise((resolve, reject) => {
+      chrome.sockets.tcp.setPaused(socketId, true, () => {
+        let connectionStart = performance.now();
+        chrome.sockets.tcp.connect(socketId, host, port, (connectResult) => {
+          this._connection.stats.connect = performance.now() - connectionStart;
+          if (chrome.runtime.lastError) {
+            this.log(chrome.runtime.lastError);
+            reject(chrome.runtime.lastError);
+            return;
+          }
+          if (connectResult !== 0) {
+            reject('Connection to host ' + host + ' on port ' + port + ' unsuccessful');
+            return;
+          }
+          let secureStart = performance.now();
+          this._initializeTls({
+            'socketId': socketId
+          });
+          this._tls.handshake(this._tlsOptions.sessionId || null);
+          this._connection.stats.ssl = performance.now() - secureStart;
+          resolve();
+        });
+      });
+    });
+  }
+  /**
+   * Initializes the forge library.
+   *
+   * @param {Object} options An options to pass.
+   */
+  _initializeTls(options) {
+    this._tlsOptions = options;
+    this._requiredBytes = 0;
+    forge = forge({disableNativeCode: true});
+    this._tls = forge.tls.createConnection({
+      server: false,
+      sessionId: options.sessionId || null,
+      caStore: options.caStore || [],
+      sessionCache: options.sessionCache || null,
+      cipherSuites: options.cipherSuites || [
+        forge.tls.CipherSuites.TLS_RSA_WITH_AES_128_CBC_SHA,
+        forge.tls.CipherSuites.TLS_RSA_WITH_AES_256_CBC_SHA],
+      virtualHost: options.virtualHost,
+      verify: options.verify || function() {
+        console.log('[tls] server certificate verified');
+        return true;
+      },
+      getCertificate: options.getCertificate,
+      getPrivateKey: options.getPrivateKey,
+      getSignature: options.getSignature,
+      deflate: options.deflate,
+      inflate: options.inflate,
+      connected: (c) => {
+        console.log('[tls] connected');
+        this._tls.prepare('GET / HTTP/1.0\r\n\r\n');
+        // console.log('TLS socket connected', c);
+      },
+
+      tlsDataReady: (c) => {
+        console.log('TLS data ready', c);
+        var bytes = c.tlsData.getBytes();
+        console.log('About to send to server:', bytes);
+        var data = this.stringToArrayBuffer(bytes);
+        //this.onSend.bind(this)
+        chrome.sockets.tcp.send(options.socketId, data, this.onSend.bind(this));
+      },
+
+      dataReady: (c) => {
+        console.log('Data received from TLS');
+        var data = c.data.getBytes();
+        var decoded = forge.util.decodeUtf8(data);
+        console.log('data ready (TLS)', data, decoded);
+        // irc.util.toSocketData(forge.util.decodeUtf8(data), function(data) {
+        //   _this.emit('data', data);
+        // });
+      },
+      closed: (c) => {
+        // close socket
+        console.log('TLS close', c);
+      },
+
+      error: (c, e) => {
+        // send error, close socket
+        console.log('TLS error', c, e);
+      }
+    });
+  }
+
   /**
    * Connect to a socket. To use a secure connection call `_connectSecure` method.
    * Note that ths function will result with paused socket.
@@ -663,9 +773,23 @@ class SocketFetch extends ArcEventSource {
       this.log('Sending message.');
       this._connection.messageSent = message;
       this._connection.stats._messageSending = performance.now();
-      chrome.sockets.tcp.send(this._connection.socketId, buffer, this.onSend.bind(this));
+      this.sendSocket(buffer);
     });
   }
+  /**
+   * Send a data to the socket.
+   *
+   * @param {ArrayBuffer} buffer Data to send
+   */
+  sendSocket(buffer) {
+    if (this._tls) {
+      //&& this._tls.open
+      this._tls.prepare(buffer);
+    } else {
+      chrome.sockets.tcp.send(this._connection.socketId, buffer, this.onSend.bind(this));
+    }
+  }
+
   /**
    * Generate a message for socket.
    */
@@ -891,6 +1015,25 @@ class SocketFetch extends ArcEventSource {
     if (readInfo.socketId !== this._connection.socketId) {
       return;
     }
+    if (this._tls && !this._tls.open) {
+      return;
+    }
+
+    if (this._tls) {
+      let data = this.arrayBufferToString(readInfo.data);
+      if (!('_buffer' in this)) {
+        this.buffer = '';
+      }
+      console.log('Appending data to the buffer:', this.buffer, data);
+      this._buffer += data;
+      if (this._buffer.length >= this._requiredBytes) {
+        console.log('Processing TLS buffer data');
+        this._requiredBytes = this._tls.process(this._buffer);
+        this._buffer = '';
+      }
+      return;
+    }
+
     var now = performance.now();
     if (this.state === SocketFetch.STATUS) {
       this._connection.stats._firstReceived = now;
@@ -1187,7 +1330,7 @@ class SocketFetch extends ArcEventSource {
         // if (this._connection.headers && this._connection.headers.has('Location')) {
         //   location = this._connection.headers.get('Location');
         // }
-        
+
       })
       .then(() => {
         this._request.url = location;
