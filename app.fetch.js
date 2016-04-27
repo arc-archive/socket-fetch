@@ -245,6 +245,7 @@ class SocketFetch extends ArcEventSource {
          */
         ssl: undefined,
         _firstReceived: undefined,
+        _lastReceived: undefined,
         _messageSending: undefined,
         _waitingStart: undefined
       }
@@ -988,13 +989,21 @@ class SocketFetch extends ArcEventSource {
     data = data.subarray(index + 2);
     var statusLine = this.arrayBufferToString(statusArray);
     statusLine = statusLine.replace(/HTTP\/\d(\.\d)?\s/, '');
-    var status = statusLine.substr(0, statusLine.indexOf(' '));
-    try {
-      this._connection.status = parseInt(status);
-    } catch (e) {
-      this._connection.status = 0;
+    var delimPos = statusLine.indexOf(' ');
+    var status;
+    var msg = '';
+    if (delimPos === -1) {
+      status = statusLine;
+    } else {
+      status = statusLine.substr(0, delimPos);
+      msg = statusLine.substr(delimPos + 1);
     }
-    this._connection.statusMessage = statusLine.substr(statusLine.indexOf(' ') + 1);
+    status = Number(status);
+    if (status !== status) {
+      status = 0;
+    }
+    this._connection.status = status;
+    this._connection.statusMessage = msg;
     this.log('Received status', this._connection.status, this._connection.statusMessage);
     this.state = SocketFetch.HEADERS;
     return data;
@@ -1143,6 +1152,9 @@ class SocketFetch extends ArcEventSource {
     if (this.state === SocketFetch.DONE) {
       return;
     }
+    this._connection.stats._lastReceived = performance.now();
+    this._connection.stats.receive = this._connection.stats._lastReceived -
+      this._connection.stats._firstReceived;
     this.state = SocketFetch.DONE;
     var location = null;
     if (this._connection.headers && this._connection.headers.has('Location')) {
@@ -1187,7 +1199,7 @@ class SocketFetch extends ArcEventSource {
         // if (this._connection.headers && this._connection.headers.has('Location')) {
         //   location = this._connection.headers.get('Location');
         // }
-        
+
       })
       .then(() => {
         this._request.url = location;
@@ -1261,6 +1273,7 @@ class SocketFetch extends ArcEventSource {
       this._connection.stats._firstReceived = undefined;
       this._connection.stats._messageSending = undefined;
       this._connection.stats._waitingStart = undefined;
+      this._connection.stats._lastReceived = undefined;
     });
   }
   /**
