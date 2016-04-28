@@ -1,3 +1,30 @@
+<a name="1.0.39"></a>
+## [1.0.39](https://github.com/jarrodek/socket-fetch/compare/1.0.38...v1.0.39) (2016-04-27)
+
+<a name="1.0.38"></a>
+## [1.0.38](https://github.com/jarrodek/socket-fetch/compare/1.0.37...v1.0.38) (2016-04-25)
+
+
+### Update
+
+* Added requestUrl for the response that has been redirected. ([86c08d9d97260bb27fb3c0905e614558da90bd60](https://github.com/jarrodek/socket-fetch/commit/86c08d9d97260bb27fb3c0905e614558da90bd60))
+
+
+
+<a name="1.0.37"></a>
+## [1.0.37](https://github.com/jarrodek/socket-fetch/compare/1.0.31...v1.0.37) (2016-04-25)
+
+
+### Fix
+
+* error on custom HTTP method ([f0446b9a08a9ede657b755ba5d22340f4a959848](https://github.com/jarrodek/socket-fetch/commit/f0446b9a08a9ede657b755ba5d22340f4a959848))
+* The host header will now will contain port value if not a default one to comply with thte spec.  ([fd042cb9ef77a3519a2198a6970b80eb0dbd4c71](https://github.com/jarrodek/socket-fetch/commit/fd042cb9ef77a3519a2198a6970b80eb0dbd4c71)), closes [#8](https://github.com/jarrodek/socket-fetch/issues/8)
+
+### Update
+
+* Added cookie behavior during redirection. Cookies are now included into redirect server if match domain and path ([1e4b7040cc2a140eb30c4875acfd5b000220392f](https://github.com/jarrodek/socket-fetch/commit/1e4b7040cc2a140eb30c4875acfd5b000220392f))
+
+
 <a name="1.0.36"></a>
 ## [1.0.36](https://github.com/jarrodek/socket-fetch/compare/1.0.35...v1.0.36) (2016-04-24)
 
@@ -214,18 +241,4 @@
 
 
 <a name="1.0.13"></a>
-## [1.0.13](https://github.com/jarrodek/socket-fetch/compare/v1.0.10...v1.0.13) (2016-04-06)
-
-
-### Update
-
-* Changed hows the element recognize the import location ([4986de84ee19524bb28eec5b7cd9556503b38b02](https://github.com/jarrodek/socket-fetch/commit/4986de84ee19524bb28eec5b7cd9556503b38b02))
-
-
-
-<a name="1.0.12"></a>
-## [1.0.12](https://github.com/jarrodek/socket-fetch/compare/v1.0.11...v1.0.12) (2016-04-05)
-
-
-
-
+## [1.0.13](https://github.com/j

@@ -51,6 +51,9 @@ class ArcResponse {
     this.redirects = init.redirects;
     this.stats = init.stats;
     this._headers = init.headers;
+    // To be set only if this response is a redirect. It contains the URL of the request for
+    // this response.
+    this.requestUrl = undefined;
   }
   get type() {
     return this._response.type;

@@ -245,6 +245,7 @@ class SocketFetch extends ArcEventSource {
          */
         ssl: undefined,
         _firstReceived: undefined,
+        _lastReceived: undefined,
         _messageSending: undefined,
         _waitingStart: undefined
       }
@@ -632,6 +633,7 @@ class SocketFetch extends ArcEventSource {
     if (!this._timeout.timeout) {
       return;
     }
+    this._cancelTimer();
     this._timeout.timeoutId = window.setTimeout(() => {
       if (this.state !== SocketFetch.DONE && !this._timeout.timedout) {
         this._timeout.timedout = true;
@@ -988,13 +990,21 @@ class SocketFetch extends ArcEventSource {
     data = data.subarray(index + 2);
     var statusLine = this.arrayBufferToString(statusArray);
     statusLine = statusLine.replace(/HTTP\/\d(\.\d)?\s/, '');
-    var status = statusLine.substr(0, statusLine.indexOf(' '));
-    try {
-      this._connection.status = parseInt(status);
-    } catch (e) {
-      this._connection.status = 0;
+    var delimPos = statusLine.indexOf(' ');
+    var status;
+    var msg = '';
+    if (delimPos === -1) {
+      status = statusLine;
+    } else {
+      status = statusLine.substr(0, delimPos);
+      msg = statusLine.substr(delimPos + 1);
     }
-    this._connection.statusMessage = statusLine.substr(statusLine.indexOf(' ') + 1);
+    status = Number(status);
+    if (status !== status) {
+      status = 0;
+    }
+    this._connection.status = status;
+    this._connection.statusMessage = msg;
     this.log('Received status', this._connection.status, this._connection.statusMessage);
     this.state = SocketFetch.HEADERS;
     return data;
@@ -1079,6 +1089,12 @@ class SocketFetch extends ArcEventSource {
         if (!this._connection.chunkSize) {
           data = this.readChunkSize(data);
           this.log('Chunk size: ', this._connection.chunkSize);
+          if (this._connection.chunkSize === null) {
+            // It may happen that chrome's buffer cuts the data
+            // just before the chunk size.
+            // It should proceed it in next portion of the data.
+            return;
+          }
           if (!this._connection.chunkSize) {
             this.onResponseReady();
             return;
@@ -1143,6 +1159,9 @@ class SocketFetch extends ArcEventSource {
     if (this.state === SocketFetch.DONE) {
       return;
     }
+    this._connection.stats._lastReceived = performance.now();
+    this._connection.stats.receive = this._connection.stats._lastReceived -
+      this._connection.stats._firstReceived;
     this.state = SocketFetch.DONE;
     var location = null;
     if (this._connection.headers && this._connection.headers.has('Location')) {
@@ -1158,55 +1177,13 @@ class SocketFetch extends ArcEventSource {
         this._cleanUp();
         return;
       }
-      // https://github.com/jarrodek/socket-fetch/issues/5
-      let u = URI(location);
-      let protocol = u.protocol();
-      if (protocol === '') {
-        let path = u.path();
-        if (path && path[0] !== '/') {
-          path = '/' + path;
-        }
-        location = this._request.uri.origin() + path;
-      }
-      // this is a redirect;
-      this._dispatchCustomEvent('beforeredirect', {
-        location: location
-      });
-      if (!this.redirects) {
-        this.redirects = new Set();
-      }
-
-      this._createResponse(false)
-      .then(() => {
-        this.redirects.add(this._response);
-        return this._cleanUpRedirect();
-      })
-      .then(() => {
-        // TODO: extract cookies and if cookies matches domain and path set cookies again with
-        // redirected request.
-        // if (this._connection.headers && this._connection.headers.has('Location')) {
-        //   location = this._connection.headers.get('Location');
-        // }
-        
-      })
-      .then(() => {
-        this._request.url = location;
-        this._setupUrlData();
-        this._createConnection();
-      })
-      .catch((e) => {
-        this._cancelTimer();
-        this._mainPromise.reject({
-          'message': e && e.message || 'Unknown error occurred'
-        });
-        this._cleanUp();
-      });
+      this._redirectRequest(location);
     } else {
+      this._cancelTimer();
       this._dispatchCustomEvent('loadend');
       this._request.messageSent = this._connection.messageSent;
       this._createResponse(true)
       .then(() => {
-        this._cancelTimer();
         this._dispatchCustomEvent('load', {
           response: this._response
         });
@@ -1222,6 +1199,73 @@ class SocketFetch extends ArcEventSource {
       });
     }
   }
+  /**
+   * Creates a response and adds it to the redirects list and redirects the request to the
+   * new location.
+   */
+  _redirectRequest(location) {
+    // https://github.com/jarrodek/socket-fetch/issues/5
+    let u = URI(location);
+    let protocol = u.protocol();
+    if (protocol === '') {
+      let path = u.path();
+      if (path && path[0] !== '/') {
+        path = '/' + path;
+      }
+      location = this._request.uri.origin() + path;
+    }
+    // this is a redirect;
+    this._dispatchCustomEvent('beforeredirect', {
+      location: location
+    });
+    if (!this.redirects) {
+      this.redirects = new Set();
+    }
+    var responseCookies = null;
+    if (this._connection.headers && this._connection.headers.has('set-cookie')) {
+      responseCookies = this._connection.headers.get('set-cookie');
+    }
+    this._createResponse(false)
+    .then(() => {
+      this._cancelTimer();
+      this._response.requestUrl = this._request.url;
+      this.redirects.add(this._response);
+      return this._cleanUpRedirect();
+    })
+    .then(() => {
+      if (!responseCookies) {
+        return;
+      }
+      var newParser = new Cookies(responseCookies, location);
+      newParser.filter();
+      newParser.clearExpired();
+      if (this._request.headers.has('Cookie')) {
+        var oldCookies = this._request.headers.get('Cookie');
+        var oldParser = new Cookies(oldCookies, location);
+        oldParser.filter();
+        oldParser.clearExpired();
+        oldParser.merge(newParser);
+        newParser = oldParser;
+      }
+      var str = newParser.toString(true);
+      if (str) {
+        this._request.headers.set('Cookie', str);
+      }
+    })
+    .then(() => {
+      this._request.url = location;
+      this._setupUrlData();
+      this._createConnection();
+    })
+    .catch((e) => {
+      this._cancelTimer();
+      this._mainPromise.reject({
+        'message': e && e.message || 'Unknown error occurred'
+      });
+      this._cleanUp();
+    });
+  }
+
   /**
    * After the connection is closed an result returned this method will release resources.
    */
@@ -1261,6 +1305,7 @@ class SocketFetch extends ArcEventSource {
       this._connection.stats._firstReceived = undefined;
       this._connection.stats._messageSending = undefined;
       this._connection.stats._waitingStart = undefined;
+      this._connection.stats._lastReceived = undefined;
     });
   }
   /**
@@ -1282,6 +1327,10 @@ class SocketFetch extends ArcEventSource {
     }
     var sizeArray = array.subarray(0, index);
     var sizeHex = this.arrayBufferToString(sizeArray);
+    if (!sizeHex || sizeHex === '') {
+      this._connection.chunkSize = null;
+      return array.subarray(index + 2);
+    }
     this._connection.chunkSize = parseInt(sizeHex, 16);
     return array.subarray(index + 2);
   }
@@ -1646,3 +1695,4 @@ class SocketFetch extends ArcEventSource {
 window.SocketFetch = SocketFetch;
 window.SocketFetchOptions = SocketFetchOptions;
 })();
+

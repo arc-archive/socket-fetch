@@ -16,6 +16,8 @@
   "newcap": false,
   "globals": {
     "chrome": true,
-    "URLSearchParams": true
+    "URLSearchParams": true,
+    "URI": true,
+    "Cookies": true
   }
 }
