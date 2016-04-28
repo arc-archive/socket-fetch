@@ -1,3 +1,13 @@
+<a name="1.0.43"></a>
+## [1.0.43](https://github.com/jarrodek/socket-fetch/compare/1.0.38...v1.0.43) (2016-04-28)
+
+
+### Update
+
+* When redirects are available, the library will not throw error anymore, instead it returns errored response object with the redirect information. ([35cd88cbc35d4c9876c995c8470675bd8c5a338a](https://github.com/jarrodek/socket-fetch/commit/35cd88cbc35d4c9876c995c8470675bd8c5a338a))
+
+
+
 <a name="1.0.39"></a>
 ## [1.0.39](https://github.com/jarrodek/socket-fetch/compare/1.0.38...v1.0.39) (2016-04-27)
 
