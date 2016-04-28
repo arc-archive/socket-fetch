@@ -1,3 +1,6 @@
+<a name="1.0.39"></a>
+## [1.0.39](https://github.com/jarrodek/socket-fetch/compare/1.0.38...v1.0.39) (2016-04-27)
+
 <a name="1.0.38"></a>
 ## [1.0.38](https://github.com/jarrodek/socket-fetch/compare/1.0.37...v1.0.38) (2016-04-25)
 
@@ -20,7 +23,6 @@
 ### Update
 
 * Added cookie behavior during redirection. Cookies are now included into redirect server if match domain and path ([1e4b7040cc2a140eb30c4875acfd5b000220392f](https://github.com/jarrodek/socket-fetch/commit/1e4b7040cc2a140eb30c4875acfd5b000220392f))
-
 
 
 <a name="1.0.36"></a>
