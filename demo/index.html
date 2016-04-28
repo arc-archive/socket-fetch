@@ -148,7 +148,8 @@ Content-Type: application/json
     var init = {
       'method': demo.method,
       'headers': new Headers(headersToObject(demo.headers)),
-      'debug': true
+      'debug': true,
+      'timeout': 5000
     };
     if (demo.method === 'POST') {
       init.body = demo.payload;

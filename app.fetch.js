@@ -633,6 +633,7 @@ class SocketFetch extends ArcEventSource {
     if (!this._timeout.timeout) {
       return;
     }
+    this._cancelTimer();
     this._timeout.timeoutId = window.setTimeout(() => {
       if (this.state !== SocketFetch.DONE && !this._timeout.timedout) {
         this._timeout.timedout = true;
@@ -1194,14 +1195,7 @@ class SocketFetch extends ArcEventSource {
         return this._cleanUpRedirect();
       })
       .then(() => {
-        // TODO: extract cookies and if cookies matches domain and path set cookies again with
-        // redirected request.
-        // if (this._connection.headers && this._connection.headers.has('Location')) {
-        //   location = this._connection.headers.get('Location');
-        // }
-
-      })
-      .then(() => {
+        this._cancelTimer();
         this._request.url = location;
         this._setupUrlData();
         this._createConnection();
@@ -1214,11 +1208,11 @@ class SocketFetch extends ArcEventSource {
         this._cleanUp();
       });
     } else {
+      this._cancelTimer();
       this._dispatchCustomEvent('loadend');
       this._request.messageSent = this._connection.messageSent;
       this._createResponse(true)
       .then(() => {
-        this._cancelTimer();
         this._dispatchCustomEvent('load', {
           response: this._response
         });
