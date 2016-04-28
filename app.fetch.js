@@ -1191,6 +1191,7 @@ class SocketFetch extends ArcEventSource {
 
       this._createResponse(false)
       .then(() => {
+        this._response.requestUrl = this._request.url;
         this.redirects.add(this._response);
         return this._cleanUpRedirect();
       })

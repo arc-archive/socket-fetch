@@ -51,6 +51,8 @@ class ArcResponse {
     this.redirects = init.redirects;
     this.stats = init.stats;
     this._headers = init.headers;
+    // Filed when the request was redirected.
+    this.requestUrl = undefined;
   }
   get type() {
     return this._response.type;
