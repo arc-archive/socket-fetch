@@ -59,6 +59,8 @@ class ArcResponse {
     // To be set only if this response is a redirect. It contains the URL of the request for
     // this response.
     this.requestUrl = undefined;
+    // To be set only if this response is a redirect. Originally message sent to server.
+    this.messageSent = undefined;
   }
   get type() {
     return this._response ? this._response.type : null;
