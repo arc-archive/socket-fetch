@@ -1,3 +1,13 @@
+<a name="1.0.45"></a>
+## [1.0.45](https://github.com/jarrodek/socket-fetch/compare/1.0.44...v1.0.45) (2016-04-28)
+
+
+### Update
+
+* added  property to all reported responses ([38452b90cebdee3fafef35d8250d869ecb58678c](https://github.com/jarrodek/socket-fetch/commit/38452b90cebdee3fafef35d8250d869ecb58678c))
+
+
+
 <a name="1.0.44"></a>
 ## [1.0.44](https://github.com/jarrodek/socket-fetch/compare/1.0.43...v1.0.44) (2016-04-28)
 
@@ -188,73 +198,4 @@
 ## [1.0.23](https://github.com/jarrodek/socket-fetch/compare/1.0.21...v1.0.23) (2016-04-08)
 
 
-### Fix
-
-* Fixed redirect issue when location header is a relative url  ([05c04db99010a31e04d8d707085ce12b23793dce](https://github.com/jarrodek/socket-fetch/commit/05c04db99010a31e04d8d707085ce12b23793dce)), closes [#5](https://github.com/jarrodek/socket-fetch/issues/5)
-
-
-
-<a name="1.0.21"></a>
-## [1.0.21](https://github.com/jarrodek/socket-fetch/compare/1.0.12...v1.0.21) (2016-04-08)
-
-
-### Fix
-
-* Fixes HEAD tyle of request  ([47f0e3ba5137d31827cbbeb8ac6dd358852573a3](https://github.com/jarrodek/socket-fetch/commit/47f0e3ba5137d31827cbbeb8ac6dd358852573a3)), closes [#4](https://github.com/jarrodek/socket-fetch/issues/4)
-
-### Update
-
-* Changed hows the element recognize the import location ([4986de84ee19524bb28eec5b7cd9556503b38b02](https://github.com/jarrodek/socket-fetch/commit/4986de84ee19524bb28eec5b7cd9556503b38b02))
-
-
-
-<a name="1.0.21"></a>
-## [1.0.21](https://github.com/jarrodek/socket-fetch/compare/1.0.19...v1.0.21) (2016-04-07)
-
-
-
-
-<a name="1.0.20"></a>
-## [1.0.20](https://github.com/jarrodek/socket-fetch/compare/1.0.19...v1.0.20) (2016-04-07)
-
-
-
-
-<a name="1.0.19"></a>
-## [1.0.19](https://github.com/jarrodek/socket-fetch/compare/1.0.18...v1.0.19) (2016-04-06)
-
-
-
-
-<a name="1.0.18"></a>
-## [1.0.18](https://github.com/jarrodek/socket-fetch/compare/1.0.17...v1.0.18) (2016-04-06)
-
-
-
-
-<a name="1.0.17"></a>
-## [1.0.17](https://github.com/jarrodek/socket-fetch/compare/1.0.16...v1.0.17) (2016-04-06)
-
-
-
-
-<a name="1.0.16"></a>
-## [1.0.16](https://github.com/jarrodek/socket-fetch/compare/1.0.15...v1.0.16) (2016-04-06)
-
-
-
-
-<a name="1.0.15"></a>
-## [1.0.15](https://github.com/jarrodek/socket-fetch/compare/1.0.14...v1.0.15) (2016-04-06)
-
-
-
-
-<a name="1.0.14"></a>
-## [1.0.14](https://github.com/jarrodek/socket-fetch/compare/1.0.13...v1.0.14) (2016-04-06)
-
-
-
-
-<a name="1.0.13"></a>
-## [1.0.13](https://github.com/j
+### Fi
