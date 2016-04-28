@@ -133,9 +133,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   demo.addEventListener('dom-change', function() {
     // demo.set('url', 'https://chromerestclient.appspot.com/test?p=json');
-    demo.set('url', 'http://localhost:8081/redirect');
+    // demo.set('url', 'http://localhost:8081/redirect');
+    demo.url = 'https://httpbin.org/range/75776?chunk_size=150';
     demo.set('payload', '{"test":"request"}');
-    demo.set('method', 'POST');
+    demo.set('method', 'GET');
     demo.set('headers',
     `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate
@@ -165,7 +166,7 @@ Content-Type: application/json
             demo.push('logs', {
               log: 'Received response.'
             });
-            console.log('Fetch result', result);
+            // console.log('Fetch result', result);
           })
           .catch((cause) => {
             demo.push('logs', {
@@ -179,7 +180,7 @@ Content-Type: application/json
           demo.push('logs', {
             log: log
           });
-          console.log('Fetch result', response);
+          // console.log('Fetch result', response);
         }
       })
       .catch((cause) => {

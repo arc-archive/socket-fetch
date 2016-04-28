@@ -1089,6 +1089,12 @@ class SocketFetch extends ArcEventSource {
         if (!this._connection.chunkSize) {
           data = this.readChunkSize(data);
           this.log('Chunk size: ', this._connection.chunkSize);
+          if (this._connection.chunkSize === null) {
+            // It may happen that chrome's buffer cuts the data
+            // just before the chunk size.
+            // It should proceed it in next portion of the data.
+            return;
+          }
           if (!this._connection.chunkSize) {
             this.onResponseReady();
             return;
@@ -1290,6 +1296,10 @@ class SocketFetch extends ArcEventSource {
     }
     var sizeArray = array.subarray(0, index);
     var sizeHex = this.arrayBufferToString(sizeArray);
+    if (!sizeHex || sizeHex === '') {
+      this._connection.chunkSize = null;
+      return array.subarray(index + 2);
+    }
     this._connection.chunkSize = parseInt(sizeHex, 16);
     return array.subarray(index + 2);
   }
