@@ -33,18 +33,23 @@ class ArcResponse {
   constructor(body, init) {
     this._status = init.status;
 
-    // not sure why Response object do not accept 1xx status codes...
-    if (init.status >= 100 && init.status < 200 || init.status === 0) {
-      init.status = 200;
-    } else if (init.status === undefined) {
-      init.status = 200;
-      init.statusText = 'Request error';
+    if (init.error) {
+      // Expecting a init.error to be an Error object.
+      this.error = init.error;
+    } else {
+      // not sure why Response object do not accept 1xx status codes...
+      if (init.status >= 100 && init.status < 200 || init.status === 0) {
+        init.status = 200;
+      } else if (init.status === undefined) {
+        init.status = 200;
+        init.statusText = 'Request error';
+      }
+      if (body === null) {
+        body = '';
+      }
+      this._response = new Response(body, init);
+      this.rawResponse = body;
     }
-    if (body === null) {
-      body = '';
-    }
-    this._response = new Response(body, init);
-    this.rawResponse = body;
     if (!(init.redirects instanceof Set)) {
       init.redirects = new Set(init.redirects);
     }
@@ -56,46 +61,72 @@ class ArcResponse {
     this.requestUrl = undefined;
   }
   get type() {
-    return this._response.type;
+    return this._response ? this._response.type : null;
   }
   get status() {
     return this._status;
   }
   get statusText() {
-    return this._response.statusText;
+    return this._response ? this._response.statusText : null;
   }
   get ok() {
-    return this._response.ok;
+    return this._response ? this._response.ok : false;
   }
   get headers() {
     return this._headers;
   }
   get bodyUsed() {
-    return this._response.bodyUsed;
+    return this._response ? this._response.bodyUsed : null;
   }
 
   clone() {
+    if (this._response) {
+      throw new Error('Cannot clone response because it\'s errored response');
+    }
     return this._response.clone();
   }
   error() {
+    if (this._response) {
+      return () => {
+        return this.error;
+      };
+    }
     return this._response.error();
   }
   redirect() {
+    if (this._response) {
+      throw new Error('Cannot redirect response because it\'s errored response');
+    }
     return this._response.redirect();
   }
   arrayBuffer() {
+    if (this._response) {
+      throw new Error('Cannot read response because it\'s errored response');
+    }
     return this._response.arrayBuffer();
   }
   blob() {
+    if (this._response) {
+      throw new Error('Cannot read response because it\'s errored response');
+    }
     return this._response.blob();
   }
   formData() {
+    if (this._response) {
+      throw new Error('Cannot read response because it\'s errored response');
+    }
     return this._response.formData();
   }
   json() {
+    if (this._response) {
+      throw new Error('Cannot read response because it\'s errored response');
+    }
     return this._response.json();
   }
   text() {
+    if (this._response) {
+      throw new Error('Cannot read response because it\'s errored response');
+    }
     return this._response.text();
   }
 }
