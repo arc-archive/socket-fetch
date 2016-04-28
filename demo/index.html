@@ -134,7 +134,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   demo.addEventListener('dom-change', function() {
     // demo.set('url', 'https://chromerestclient.appspot.com/test?p=json');
     // demo.set('url', 'http://localhost:8081/redirect');
-    demo.url = 'https://httpbin.org/range/75776?chunk_size=150';
+    //demo.url = 'https://httpbin.org/range/75776?chunk_size=150';
+    demo.url = 'https://chromerestclient.appspot.com/test?p=redirect';
     demo.set('payload', '{"test":"request"}');
     demo.set('method', 'GET');
     demo.set('headers',

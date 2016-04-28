@@ -359,7 +359,7 @@ class SocketFetch extends ArcEventSource {
   fetch() {
     return new Promise((resolve, reject) => {
       if (this.aborted) {
-        this._createResponse(true)
+        this._createResponse({includeRedirects: true})
         .then(() => {
           resolve(this._response);
         })
@@ -410,6 +410,15 @@ class SocketFetch extends ArcEventSource {
         this._readyState = 1;
         this._onConnected();
       }).catch((cause) => {
+        if (this.redirects) {
+          // There were a redirects so it has something to display.
+          // Don't just throw an error, construct a response that is errored.
+          this._publishResponse({
+            includeRedirects: true,
+            error: cause
+          });
+          return;
+        }
         this._readyState = 0;
         this._mainPromise.reject(cause);
         this._cleanUp();
@@ -577,11 +586,17 @@ class SocketFetch extends ArcEventSource {
   /**
    * Create a response object.
    *
-   * @param {Boolean} includeRedirects If true the response will have information about redirects.
+   * @param {Object} opts An options to construct a response object:
+   *  - {Boolean} includeRedirects If true the response will have information about redirects.
+   *  - {Error} error An error object when the response is errored.
    * @return {ArcResponse} A response object.
    */
-  _createResponse(includeRedirects) {
+  _createResponse(opts) {
     return new Promise((resolve, reject) => {
+      if (opts.error) {
+        resolve(null);
+        return;
+      }
       var status = this._connection.status;
       if (status < 100 || status > 599) {
         reject(new Error(`The response status "${status}" is not allowed.
@@ -612,7 +627,10 @@ class SocketFetch extends ArcEventSource {
         headers: this._connection.headers,
         stats: stats
       };
-      if (includeRedirects && this.redirects && this.redirects.size) {
+      if (opts.error) {
+        options.error = opts.error;
+      }
+      if (opts.includeRedirects && this.redirects && this.redirects.size) {
         options.redirects = this.redirects;
       }
       this._response = new ArcResponse(body, options);
@@ -1182,23 +1200,32 @@ class SocketFetch extends ArcEventSource {
       this._cancelTimer();
       this._dispatchCustomEvent('loadend');
       this._request.messageSent = this._connection.messageSent;
-      this._createResponse(true)
-      .then(() => {
-        this._dispatchCustomEvent('load', {
-          response: this._response
-        });
-        this._mainPromise.resolve(this._response);
-        this._cleanUp();
-      })
-      .catch((e) => {
-        this._cancelTimer();
-        this._mainPromise.reject({
-          'message': e && e.message || 'Unknown error occurred'
-        });
-        this._cleanUp();
-      });
+      this._publishResponse({includeRedirects: true});
     }
   }
+  /**
+   * Generate response object and publish it to the listeners.
+   *
+   * @param {Object} opts See #_createResponse for more info.
+   */
+  _publishResponse(opts) {
+    this._createResponse(opts)
+    .then(() => {
+      this._dispatchCustomEvent('load', {
+        response: this._response
+      });
+      this._mainPromise.resolve(this._response);
+      this._cleanUp();
+    })
+    .catch((e) => {
+      this._cancelTimer();
+      this._mainPromise.reject({
+        'message': e && e.message || 'Unknown error occurred'
+      });
+      this._cleanUp();
+    });
+  }
+
   /**
    * Creates a response and adds it to the redirects list and redirects the request to the
    * new location.
@@ -1225,7 +1252,7 @@ class SocketFetch extends ArcEventSource {
     if (this._connection.headers && this._connection.headers.has('set-cookie')) {
       responseCookies = this._connection.headers.get('set-cookie');
     }
-    this._createResponse(false)
+    this._createResponse({includeRedirects: false})
     .then(() => {
       this._cancelTimer();
       this._response.requestUrl = this._request.url;
@@ -1695,4 +1722,3 @@ class SocketFetch extends ArcEventSource {
 window.SocketFetch = SocketFetch;
 window.SocketFetchOptions = SocketFetchOptions;
 })();
-
