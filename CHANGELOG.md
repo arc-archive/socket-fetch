@@ -1,3 +1,13 @@
+<a name="1.0.47"></a>
+## [1.0.47](https://github.com/jarrodek/socket-fetch/compare/1.0.46...v1.0.47) (2016-04-29)
+
+
+### Fix
+
+* Fixed issues with wrong conditions ([abae5ee6b4e34a10a9c77aae455ca1e50bf4d993](https://github.com/jarrodek/socket-fetch/commit/abae5ee6b4e34a10a9c77aae455ca1e50bf4d993))
+
+
+
 <a name="1.0.46"></a>
 ## [1.0.46](https://github.com/jarrodek/socket-fetch/compare/1.0.45...v1.0.46) (2016-04-28)
 
