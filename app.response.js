@@ -82,13 +82,13 @@ class ArcResponse {
   }
 
   clone() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot clone response because it\'s errored response');
     }
     return this._response.clone();
   }
   error() {
-    if (this._response) {
+    if (!this._response) {
       return () => {
         return this.error;
       };
@@ -96,37 +96,37 @@ class ArcResponse {
     return this._response.error();
   }
   redirect() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot redirect response because it\'s errored response');
     }
     return this._response.redirect();
   }
   arrayBuffer() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot read response because it\'s errored response');
     }
     return this._response.arrayBuffer();
   }
   blob() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot read response because it\'s errored response');
     }
     return this._response.blob();
   }
   formData() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot read response because it\'s errored response');
     }
     return this._response.formData();
   }
   json() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot read response because it\'s errored response');
     }
     return this._response.json();
   }
   text() {
-    if (this._response) {
+    if (!this._response) {
       throw new Error('Cannot read response because it\'s errored response');
     }
     return this._response.text();
