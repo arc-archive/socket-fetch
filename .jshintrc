@@ -18,6 +18,9 @@
     "chrome": true,
     "URLSearchParams": true,
     "URI": true,
-    "Cookies": true
+    "Cookies": true,
+    "DigestAuth": true,
+    "NtlmAuth": true,
+    "BasicAuth": true
   }
 }

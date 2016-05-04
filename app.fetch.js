@@ -372,10 +372,12 @@ class SocketFetch extends ArcEventSource {
         });
         return;
       }
+
       if (this._connection.started) {
         reject(new Error('This connection has been made. Create a new class and use it instead.'));
         return;
       }
+
       this._connection.started = true;
       this._connection._readFn = this.readSocketData.bind(this);
       this._connection._errorFn = this.readSocketError.bind(this);
@@ -383,14 +385,47 @@ class SocketFetch extends ArcEventSource {
       this._mainPromise.resolve = resolve;
       chrome.sockets.tcp.onReceive.addListener(this._connection._readFn);
       chrome.sockets.tcp.onReceiveError.addListener(this._connection._errorFn);
-      this._createConnection();
+
+      this._authRequest().then(() => this._createConnection());
     });
   }
+  // set auth methods.
+  _authRequest() {
+    if (!this._request.auth) {
+      return Promise.resolve();
+    }
+    let auth = this._request.auth;
+    let obj = null;
+    switch (auth.method) {
+      case 'ntlm':
+        obj = new NtlmAuth(auth);
+        obj.url = this.request.url;
+        obj.state = 0;
+        break;
+      case 'basic':
+        obj = new BasicAuth(auth);
+        break;
+      case 'digest':
+        obj = new DigestAuth(auth);
+        break;
+    }
+    if (!obj) {
+      return Promise.resolve();
+    }
+    this.auth = obj;
+    return Promise.resolve();
+  }
+
   /** Called after socket has been created and connection yet to be made. */
   _createConnection() {
     var socketProperties = {
       name: 'arc'
     };
+    if (this._connection.socketId) {
+      this.log('Reusing last socket and connection: ');
+      this._onConnected();
+      return;
+    }
     chrome.sockets.tcp.create(socketProperties, (createInfo) => {
       this.log('Created socket', createInfo.socketId);
       this._connection.socketId = createInfo.socketId;
@@ -633,6 +668,24 @@ class SocketFetch extends ArcEventSource {
       if (opts.includeRedirects && this.redirects && this.redirects.size) {
         options.redirects = this.redirects;
       }
+      if (this._connection.status === 401) {
+        let auth = (this._connection.headers && this._connection.headers.has('www-authenticate')) ?
+          this._connection.headers.get('www-authenticate') : undefined;
+        let type;
+        if (auth) {
+          auth = auth.toLowerCase();
+          if (auth.indexOf('ntlm') !== -1) {
+            type = 'ntlm';
+          } else if (auth.indexOf('basic') !== -1) {
+            type = 'basic';
+          } else if (auth.indexOf('digest') !== -1) {
+            type = 'digest';
+          } else {
+            type = 'unknown';
+          }
+        }
+        options.auth = type;
+      }
       this._response = new ArcResponse(body, options);
     });
   }
@@ -674,8 +727,18 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return;
     }
-    this.generateMessage()
-    .then((buffer) => {
+    var promise;
+    if (this.auth && this.auth.method === 'ntlm') {
+      promise = this.generateNtlmMessage();
+    } else if (this.auth && this.auth.method === 'basic') {
+      this.setupBasicAuth();
+      this.auth = undefined; // Don't need it anymore
+      promise = this.generateMessage();
+    } else {
+      promise = this.generateMessage();
+    }
+
+    promise.then((buffer) => {
       let message = this.arrayBufferToString(buffer);
       if (this.debug) {
         this.log('Generated message to send\n' + message);
@@ -719,6 +782,37 @@ class SocketFetch extends ArcEventSource {
       }
     });
   }
+
+  generateNtlmMessage() {
+    return new Promise((resolve) => {
+      let orygHeaders = this._request.headers;
+      let msg;
+      if (this.auth.state === 0) {
+        msg = this.auth.createMessage1(this._connection.host);
+      } else if (this.auth.state === 1) {
+        msg = this.auth.createMessage3(this.auth.challenge, this._connection.host);
+        this.auth.state = 2;
+      }
+      this._request.headers = new Headers({
+        'Authorization': 'NTLM ' + msg.toBase64()
+      });
+      this._createMessageBuffer()
+      .then((buffer) => {
+        this._request.headers = orygHeaders;
+        resolve(buffer);
+      });
+    });
+  }
+
+  setupBasicAuth() {
+    if (!this._request.headers) {
+      this._request.headers = new Headers();
+    }
+    this._request.headers.set({
+      'Authorization': this.auth.getHeader()
+    });
+  }
+
   /**
    * Adds the content-length header if required.
    * This function will do nothing if the request do not carry a payload or
@@ -953,12 +1047,9 @@ class SocketFetch extends ArcEventSource {
     var message = '[chrome socket error]: ' + this.getCodeMessage(code);
     this.log('readSocketError:', message, code);
     if (this.state !== SocketFetch.DONE && this._mainPromise.reject) {
-      let error = new Error(message);
-      this._mainPromise.reject(error);
-      this._dispatchCustomEvent('error', {
-        error: error
+      this._errorRequest({
+        'message': message || 'Unknown error occurred'
       });
-      this._cancelTimer();
     }
   }
   /**
@@ -1196,7 +1287,52 @@ class SocketFetch extends ArcEventSource {
         return;
       }
       this._redirectRequest(location);
+    } else if (status === 401 && this.auth) {
+      switch(this.auth.method) {
+        case 'ntlm':
+          this.handleNtlmResponse();
+          break;
+      }
     } else {
+      this._cancelTimer();
+      this._dispatchCustomEvent('loadend');
+      this._publishResponse({includeRedirects: true});
+    }
+  }
+
+  handleNtlmResponse() {
+    if (this.auth.state === 0) {
+      if (this._connection.headers.has('www-authenticate')) {
+        try {
+          this.auth.challenge = this.auth.getChallenge(this._connection.headers.get('www-authenticate'));
+          this.auth.state = 1;
+          this._cancelTimer();
+          this._cleanUpRedirect({
+            keepConnection: true
+          })
+          .then(() => {
+            this._setupUrlData();
+            this._createConnection();
+          })
+          .catch((e) => {
+            this._errorRequest({
+              'message': e && e.message || 'Unknown error occurred'
+            });
+          });
+        } catch (e) {
+          this.auth = undefined;
+          this._errorRequest({
+            'message': e && e.message || 'Unknown error occurred in NTLM auth.'
+          });
+        }
+      } else {
+        this.auth = 'ntlm';
+        this._cancelTimer();
+        this._dispatchCustomEvent('loadend');
+        this._publishResponse({includeRedirects: true});
+      }
+    } else {
+      this.auth = 'ntlm';
       this._cancelTimer();
       this._dispatchCustomEvent('loadend');
       this._publishResponse({includeRedirects: true});
@@ -1218,12 +1354,29 @@ class SocketFetch extends ArcEventSource {
       this._cleanUp();
     })
     .catch((e) => {
-      this._cancelTimer();
-      this._mainPromise.reject({
+      this._errorRequest({
         'message': e && e.message || 'Unknown error occurred'
       });
-      this._cleanUp();
     });
+  }
+  // Finishes the response with error message.
+  _errorRequest(opts) {
+    this._cleanUp();
+    var message;
+    if (opts.code && !opts.message) {
+      message = this.getCodeMessage(opts.code);
+    } else if (opts.message) {
+      message = opts.message;
+    }
+    message = message || 'Unknown error occurred';
+    let error = new Error(message);
+    if (this._mainPromise.reject) {
+      this._mainPromise.reject(error);
+    }
+    this._dispatchCustomEvent('error', {
+      error: error
+    });
+    this._cancelTimer();
   }
 
   /**
@@ -1240,6 +1393,21 @@ class SocketFetch extends ArcEventSource {
         path = '/' + path;
       }
       location = this._request.uri.origin() + path;
+    }
+    // check if this is infinite loop
+    if (this.redirects) {
+      let loop = false;
+      this.redirects.forEach((item) => {
+        if (item.requestUrl === location) {
+          loop = true;
+        }
+      });
+      if (loop) {
+        this._errorRequest({
+          code: 310
+        });
+        return;
+      }
     }
     // this is a redirect;
     this._dispatchCustomEvent('beforeredirect', {
@@ -1258,7 +1426,9 @@ class SocketFetch extends ArcEventSource {
       this._response.requestUrl = this._request.url;
       this._response.messageSent = this._connection.messageSent;
       this.redirects.add(this._response);
-      return this._cleanUpRedirect();
+      return this._cleanUpRedirect({
+        keepConnection: false
+      });
     })
     .then(() => {
       if (!responseCookies) {
@@ -1286,11 +1456,9 @@ class SocketFetch extends ArcEventSource {
       this._createConnection();
     })
     .catch((e) => {
-      this._cancelTimer();
-      this._mainPromise.reject({
+      this._errorRequest({
         'message': e && e.message || 'Unknown error occurred'
       });
-      this._cleanUp();
     });
   }
 
@@ -1298,7 +1466,9 @@ class SocketFetch extends ArcEventSource {
    * After the connection is closed an result returned this method will release resources.
    */
   _cleanUp() {
-    this._cleanUpRedirect();
+    this._cleanUpRedirect({
+      keepConnection: false
+    });
     this._mainPromise.reject = undefined;
     this._mainPromise.resolve = undefined;
     chrome.sockets.tcp.onReceive.removeListener(this._connection._readFn);
@@ -1309,9 +1479,14 @@ class SocketFetch extends ArcEventSource {
     this._cancelTimer();
   }
   /** Clean up for redirect */
-  _cleanUpRedirect() {
-    return this.disconnect()
-    .then(() => {
+  _cleanUpRedirect(opts) {
+    var promise;
+    if (opts.keepConnection) {
+      promise = Promise.resolve();
+    } else {
+      promise = this.disconnect();
+    }
+    return promise.then(() => {
       this._connection.body = undefined;
       this._connection.headers = undefined;
       this._connection.chunkSize = undefined;

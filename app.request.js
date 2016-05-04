@@ -126,6 +126,9 @@ class ArcRequest {
     if ('messageSent' in init) {
       this.messageSent = init.messageSent;
     }
+    if ('auth' in init) {
+      this.auth = init.auth;
+    }
   }
   /**
    * Assign initial value from existing {@link ArcRequest} object
@@ -142,6 +145,7 @@ class ArcRequest {
     this._redirect = input._redirect;
     this._timeout = input._timeout;
     this._messageSent = input._messageSent;
+    this._auth = input._auth;
   }
   /**
    * Sets a HTTP method to this {@link ArcRequest} object.
@@ -254,6 +258,29 @@ class ArcRequest {
 
   get messageSent() {
     return this._messageSent;
+  }
+  /**
+   * This is a setup for for auth options.
+   * The library will attempt to authenticate the user with given credentials.
+   *
+   * @param {Object} opts An object containng:
+   * {String} uid An user ID
+   * {String} passwd User password
+   * {String} method One of basic, ntlm, digest. Lowercase.
+   * {String} domain Optional. Auth domain. Default undefined.
+   * {Boolean} proxy Optional. True for proxy authentication. Default to false.
+   */
+  set auth(opts) {
+    if (!opts.uid || !opts.passwd || !opts.method) {
+      console.warn('Invalid auth options. uid, passwd and method are required');
+    }
+    opts.domain = opts.domain || undefined;
+    opts.proxy = opts.proxy || false;
+    this._auth = opts;
+  }
+
+  get auth() {
+    return this._auth;
   }
 }
 window.ArcRequest = ArcRequest;

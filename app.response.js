@@ -61,6 +61,9 @@ class ArcResponse {
     this.requestUrl = undefined;
     // To be set only if this response is a redirect. Originally message sent to server.
     this.messageSent = undefined;
+    // Object filled in with auth method data when reporting 401 or 407.
+    // It will contain a `method` property with (lowercase) auth method name
+    this.auth = init.auth || undefined;
   }
   get type() {
     return this._response ? this._response.type : null;
