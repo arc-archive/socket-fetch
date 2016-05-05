@@ -747,9 +747,9 @@ class SocketFetch extends ArcEventSource {
         if (!this._request.headers) {
           this._request.headers = new Headers();
         }
-        this._request.headers.set({
-          'Authorization': auth
-        });
+        this._request.headers.set(
+          'Authorization', auth
+        );
       }
       promise = this.generateMessage();
     } else {
@@ -826,9 +826,9 @@ class SocketFetch extends ArcEventSource {
     if (!this._request.headers) {
       this._request.headers = new Headers();
     }
-    this._request.headers.set({
-      'Authorization': this.auth.getHeader()
-    });
+    this._request.headers.set(
+      'Authorization', this.auth.getHeader()
+    );
   }
 
   /**
