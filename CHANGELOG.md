@@ -1,3 +1,13 @@
+<a name="1.0.50"></a>
+## [1.0.50](https://github.com/jarrodek/socket-fetch/compare/1.0.49...v1.0.50) (2016-05-05)
+
+
+### Fix
+
+* issues with auth response status ([53221c92c68de5b9daf802d272a72b0ab4861ef7](https://github.com/jarrodek/socket-fetch/commit/53221c92c68de5b9daf802d272a72b0ab4861ef7))
+
+
+
 <a name="1.0.49"></a>
 ## [1.0.49](https://github.com/jarrodek/socket-fetch/compare/1.0.48...v1.0.49) (2016-05-05)
 
