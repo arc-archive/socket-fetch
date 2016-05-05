@@ -1,3 +1,13 @@
+<a name="1.0.52"></a>
+## [1.0.52](https://github.com/jarrodek/socket-fetch/compare/1.0.51...v1.0.52) (2016-05-05)
+
+
+### Fix
+
+* Fixes this._request.headers.set usage ([12b85a20a0b9a99347354eb313604377bb492b9e](https://github.com/jarrodek/socket-fetch/commit/12b85a20a0b9a99347354eb313604377bb492b9e))
+
+
+
 <a name="1.0.51"></a>
 ## [1.0.51](https://github.com/jarrodek/socket-fetch/compare/1.0.50...v1.0.51) (2016-05-05)
 
