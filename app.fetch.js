@@ -1304,8 +1304,13 @@ class SocketFetch extends ArcEventSource {
         this._cleanUp();
         return;
       }
-      this._redirectRequest(location);
-      return;
+      // See https://github.com/jarrodek/ChromeRestClient/issues/616#issuecomment-216896456
+      // and https://github.com/jarrodek/socket-fetch/issues/11
+      // Anyway, don't touch it.
+      if (status !== 302 && status !== 307) {
+        this._redirectRequest(location);
+        return;
+      }
     } else if (status === 401 && this.auth) {
       switch (this.auth.method) {
         case 'ntlm':
