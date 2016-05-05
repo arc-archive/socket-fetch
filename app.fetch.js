@@ -408,7 +408,7 @@ class SocketFetch extends ArcEventSource {
       case 'digest':
         obj = new DigestAuth(auth);
         obj.url = this.request.url;
-        obj.method = this.request.method;
+        obj.httpMethod = this.request.method;
         break;
     }
     if (!obj) {
@@ -1377,7 +1377,7 @@ class SocketFetch extends ArcEventSource {
     digestHeaders = digestHeaders.slice(digestHeaders.indexOf(':') + 1, -1);
     digestHeaders = digestHeaders.split(',');
     this.auth = new DigestAuth({});
-    this.auth.method = 'digest';
+    this.auth.httpMethod = this.request.method;
     this.auth.scheme = digestHeaders[0].split(/\s/)[1];
     for (var i = 0; i < digestHeaders.length; i++) {
       let equalIndex = digestHeaders[i].indexOf('=');

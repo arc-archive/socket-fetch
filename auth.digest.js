@@ -8,8 +8,9 @@
 
     constructor(opts) {
       super(opts);
+      this.method = 'digest';
       this.url = opts.url;
-      this.method = opts.method;
+      this.httpMethod = opts.httpMethod;
       this.scheme = opts.scheme;
       this.nonce = opts.nonce;
       this.realm = opts.realm;
@@ -30,7 +31,8 @@
     }
 
     getAuthHeader() {
-      if (!this.uid || !this.passwd || !this.realm || !this.method || !this.url || !this.nonce) {
+      if (!this.uid || !this.passwd || !this.realm || !this.httpMethod || !this.url ||
+        !this.nonce) {
         return null;
       }
       var response = this.formulateResponse();
@@ -51,7 +53,7 @@
     formulateResponse() {
       /* global CryptoJS */
       var HA1 = CryptoJS.MD5(this.uid + ':' + this.realm + ':' + this.passwd).toString();
-      var HA2 = CryptoJS.MD5(this.method + ':' + this.url).toString();
+      var HA2 = CryptoJS.MD5(this.httpMethod + ':' + this.url).toString();
       var response = CryptoJS.MD5(HA1 + ':' +
           this.nonce + ':' +
           ('00000000' + this.nc).slice(-8) + ':' +
