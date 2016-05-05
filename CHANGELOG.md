@@ -1,3 +1,13 @@
+<a name="1.0.48"></a>
+## [1.0.48](https://github.com/jarrodek/socket-fetch/compare/1.0.47...v1.0.48) (2016-05-05)
+
+
+### Breaking
+
+* Added digest and NTLM authentication. It changes how the requests are made. See code for more details ([04d0296a88deb56c7eb122e0e212371dd7879a0f](https://github.com/jarrodek/socket-fetch/commit/04d0296a88deb56c7eb122e0e212371dd7879a0f))
+
+
+
 <a name="1.0.47"></a>
 ## [1.0.47](https://github.com/jarrodek/socket-fetch/compare/1.0.46...v1.0.47) (2016-04-29)
 
