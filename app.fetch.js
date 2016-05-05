@@ -677,20 +677,20 @@ class SocketFetch extends ArcEventSource {
           let auth = (this._connection.headers &&
             this._connection.headers.has('www-authenticate')) ?
             this._connection.headers.get('www-authenticate') : undefined;
-          let type;
+          let aObj = {
+            'method': 'unknown'
+          };
           if (auth) {
             auth = auth.toLowerCase();
             if (auth.indexOf('ntlm') !== -1) {
-              type = 'ntlm';
+              aObj.method = 'ntlm';
             } else if (auth.indexOf('basic') !== -1) {
-              type = 'basic';
+              aObj.method = 'basic';
             } else if (auth.indexOf('digest') !== -1) {
-              type = 'digest';
-            } else {
-              type = 'unknown';
+              aObj.method = 'digest';
             }
           }
-          options.auth = type;
+          options.auth = aObj;
         }
       }
       this._response = new ArcResponse(body, options);
