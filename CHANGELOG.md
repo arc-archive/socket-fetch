@@ -1,3 +1,13 @@
+<a name="1.0.49"></a>
+## [1.0.49](https://github.com/jarrodek/socket-fetch/compare/1.0.48...v1.0.49) (2016-05-05)
+
+
+### Fix
+
+* issues with digest authentication ([0dd8032a2f1b0659bef11e703a4f4f3b35469436](https://github.com/jarrodek/socket-fetch/commit/0dd8032a2f1b0659bef11e703a4f4f3b35469436))
+
+
+
 <a name="1.0.48"></a>
 ## [1.0.48](https://github.com/jarrodek/socket-fetch/compare/1.0.47...v1.0.48) (2016-05-05)
 
