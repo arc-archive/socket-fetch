@@ -1320,7 +1320,7 @@ class SocketFetch extends ArcEventSource {
     } else if (status === 401) {
       if (this._connection.headers.has('www-authenticate')) {
         let authHeader = this._connection.headers.get('www-authenticate');
-        if (authHeader.toLowerCase().indexOf('digest')) {
+        if (authHeader.toLowerCase().indexOf('digest') !== -1) {
           this.handleDigestResponse(authHeader);
         }
       }
@@ -1376,7 +1376,7 @@ class SocketFetch extends ArcEventSource {
   handleDigestResponse(digestHeaders) {
     digestHeaders = digestHeaders.slice(digestHeaders.indexOf(':') + 1, -1);
     digestHeaders = digestHeaders.split(',');
-    this.auth = new DigestAuth();
+    this.auth = new DigestAuth({});
     this.auth.method = 'digest';
     this.auth.scheme = digestHeaders[0].split(/\s/)[1];
     for (var i = 0; i < digestHeaders.length; i++) {
