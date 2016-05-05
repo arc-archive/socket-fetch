@@ -1,3 +1,13 @@
+<a name="1.0.51"></a>
+## [1.0.51](https://github.com/jarrodek/socket-fetch/compare/1.0.50...v1.0.51) (2016-05-05)
+
+
+### Fix
+
+* Name colision  ([2aaf16e6770df6e089562f51ae3e685f2c560b44](https://github.com/jarrodek/socket-fetch/commit/2aaf16e6770df6e089562f51ae3e685f2c560b44))
+
+
+
 <a name="1.0.50"></a>
 ## [1.0.50](https://github.com/jarrodek/socket-fetch/compare/1.0.49...v1.0.50) (2016-05-05)
 
