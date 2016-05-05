@@ -3,6 +3,7 @@
   /* global FetchAuth */
   /**
    * A base class for auth methods used in the library.
+   * Based on https://github.com/inorganik/digest-auth-request/blob/master/digestAuthRequest.js
    */
   class DigestAuth extends FetchAuth {
 
