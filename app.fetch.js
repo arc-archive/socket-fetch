@@ -407,6 +407,8 @@ class SocketFetch extends ArcEventSource {
         break;
       case 'digest':
         obj = new DigestAuth(auth);
+        obj.url = this.request.url;
+        obj.method = this.request.method;
         break;
     }
     if (!obj) {
@@ -669,22 +671,27 @@ class SocketFetch extends ArcEventSource {
         options.redirects = this.redirects;
       }
       if (this._connection.status === 401) {
-        let auth = (this._connection.headers && this._connection.headers.has('www-authenticate')) ?
-          this._connection.headers.get('www-authenticate') : undefined;
-        let type;
-        if (auth) {
-          auth = auth.toLowerCase();
-          if (auth.indexOf('ntlm') !== -1) {
-            type = 'ntlm';
-          } else if (auth.indexOf('basic') !== -1) {
-            type = 'basic';
-          } else if (auth.indexOf('digest') !== -1) {
-            type = 'digest';
-          } else {
-            type = 'unknown';
+        if (this.auth) {
+          options.auth = this.auth;
+        } else {
+          let auth = (this._connection.headers &&
+            this._connection.headers.has('www-authenticate')) ?
+            this._connection.headers.get('www-authenticate') : undefined;
+          let type;
+          if (auth) {
+            auth = auth.toLowerCase();
+            if (auth.indexOf('ntlm') !== -1) {
+              type = 'ntlm';
+            } else if (auth.indexOf('basic') !== -1) {
+              type = 'basic';
+            } else if (auth.indexOf('digest') !== -1) {
+              type = 'digest';
+            } else {
+              type = 'unknown';
+            }
           }
+          options.auth = type;
         }
-        options.auth = type;
       }
       this._response = new ArcResponse(body, options);
     });
@@ -733,6 +740,17 @@ class SocketFetch extends ArcEventSource {
     } else if (this.auth && this.auth.method === 'basic') {
       this.setupBasicAuth();
       this.auth = undefined; // Don't need it anymore
+      promise = this.generateMessage();
+    } else if (this.auth && this.auth.method === 'digest') {
+      let auth = this.auth.getAuthHeader();
+      if (auth) {
+        if (!this._request.headers) {
+          this._request.headers = new Headers();
+        }
+        this._request.headers.set({
+          'Authorization': auth
+        });
+      }
       promise = this.generateMessage();
     } else {
       promise = this.generateMessage();
@@ -1287,24 +1305,33 @@ class SocketFetch extends ArcEventSource {
         return;
       }
       this._redirectRequest(location);
+      return;
     } else if (status === 401 && this.auth) {
-      switch(this.auth.method) {
+      switch (this.auth.method) {
         case 'ntlm':
           this.handleNtlmResponse();
-          break;
+          return;
       }
-    } else {
-      this._cancelTimer();
-      this._dispatchCustomEvent('loadend');
-      this._publishResponse({includeRedirects: true});
+    } else if (status === 401) {
+      if (this._connection.headers.has('www-authenticate')) {
+        let authHeader = this._connection.headers.get('www-authenticate');
+        if (authHeader.toLowerCase().indexOf('digest')) {
+          this.handleDigestResponse(authHeader);
+        }
+      }
     }
+
+    this._cancelTimer();
+    this._dispatchCustomEvent('loadend');
+    this._publishResponse({includeRedirects: true});
   }
 
   handleNtlmResponse() {
     if (this.auth.state === 0) {
       if (this._connection.headers.has('www-authenticate')) {
         try {
-          this.auth.challenge = this.auth.getChallenge(this._connection.headers.get('www-authenticate'));
+          this.auth.challenge =
+            this.auth.getChallenge(this._connection.headers.get('www-authenticate'));
           this.auth.state = 1;
           this._cancelTimer();
           this._cleanUpRedirect({
@@ -1326,18 +1353,57 @@ class SocketFetch extends ArcEventSource {
           });
         }
       } else {
-        this.auth = 'ntlm';
+        this.auth = {};
+        this.auth.method = 'ntlm';
         this._cancelTimer();
         this._dispatchCustomEvent('loadend');
         this._publishResponse({includeRedirects: true});
       }
     } else {
-      this.auth = 'ntlm';
+      this.auth = {};
+      this.auth.method = 'ntlm';
       this._cancelTimer();
       this._dispatchCustomEvent('loadend');
       this._publishResponse({includeRedirects: true});
     }
   }
+
+  handleDigestResponse(digestHeaders) {
+    digestHeaders = digestHeaders.slice(digestHeaders.indexOf(':') + 1, -1);
+    digestHeaders = digestHeaders.split(',');
+    this.auth = new DigestAuth();
+    this.auth.method = 'digest';
+    this.auth.scheme = digestHeaders[0].split(/\s/)[1];
+    for (var i = 0; i < digestHeaders.length; i++) {
+      let equalIndex = digestHeaders[i].indexOf('=');
+      let key = digestHeaders[i].substring(0, equalIndex);
+      let val = digestHeaders[i].substring(equalIndex + 1);
+      val = val.replace(/['"]+/g, '');
+      // find realm
+      if (key.match(/realm/i) !== null) {
+        this.auth.realm = val;
+      }
+      // find nonce
+      if (key.match(/nonce/i) !== null) {
+        this.auth.nonce = val;
+      }
+      // find opaque
+      if (key.match(/opaque/i) !== null) {
+        this.auth.opaque = val;
+      }
+      // find QOP
+      if (key.match(/qop/i) !== null) {
+        this.auth.qop = val;
+      }
+    }
+    // client generated keys
+    this.auth.generateCnonce();
+    if (!this.auth.nc) {
+      this.auth.nc = 1;
+    }
+    this.auth.nc++;
+  }
+
   /**
    * Generate response object and publish it to the listeners.
    *

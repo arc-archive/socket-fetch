@@ -629,16 +629,6 @@
       this.ntHashedPassword = ntHashedPassword;
     }
 
-    isChallenge(xhr) {
-      if (!xhr) {
-        return false;
-      }
-      if (xhr.status !== 401) {
-        return false;
-      }
-      var header = xhr.getResponseHeader('WWW-Authenticate');
-      return header && header.indexOf('NTLM') !== -1;
-    }
   }
 
   w.NtlmAuth = NtlmAuth;
