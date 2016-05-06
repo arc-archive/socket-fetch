@@ -1,3 +1,34 @@
+<a name="1.0.53"></a>
+## [1.0.53](https://github.com/jarrodek/socket-fetch/compare/1.0.39...v1.0.53) (2016-05-06)
+
+
+### Breaking
+
+* Added digest and NTLM authentication. It changes how the requests are made. See code for more details ([04d0296a88deb56c7eb122e0e212371dd7879a0f](https://github.com/jarrodek/socket-fetch/commit/04d0296a88deb56c7eb122e0e212371dd7879a0f))
+
+### Docs
+
+* added source info for DigestAuth class ([f93e5c65401c7f87511ac70574d4b103c6062cde](https://github.com/jarrodek/socket-fetch/commit/f93e5c65401c7f87511ac70574d4b103c6062cde))
+
+### Fix
+
+* Fixed issues with wrong conditions ([abae5ee6b4e34a10a9c77aae455ca1e50bf4d993](https://github.com/jarrodek/socket-fetch/commit/abae5ee6b4e34a10a9c77aae455ca1e50bf4d993))
+* Fixes this._request.headers.set usage ([12b85a20a0b9a99347354eb313604377bb492b9e](https://github.com/jarrodek/socket-fetch/commit/12b85a20a0b9a99347354eb313604377bb492b9e))
+* Fixes URLs with username and passwords ([c39bf177b96ed0017e12f8ab65b54899815cfee3](https://github.com/jarrodek/socket-fetch/commit/c39bf177b96ed0017e12f8ab65b54899815cfee3))
+* issues with auth response status ([53221c92c68de5b9daf802d272a72b0ab4861ef7](https://github.com/jarrodek/socket-fetch/commit/53221c92c68de5b9daf802d272a72b0ab4861ef7))
+* issues with digest authentication ([0dd8032a2f1b0659bef11e703a4f4f3b35469436](https://github.com/jarrodek/socket-fetch/commit/0dd8032a2f1b0659bef11e703a4f4f3b35469436))
+* Name colision  ([2aaf16e6770df6e089562f51ae3e685f2c560b44](https://github.com/jarrodek/socket-fetch/commit/2aaf16e6770df6e089562f51ae3e685f2c560b44))
+
+### Update
+
+* added  property to all reported responses ([64c832db12a3ca9634ba542901fd9f277d1712f7](https://github.com/jarrodek/socket-fetch/commit/64c832db12a3ca9634ba542901fd9f277d1712f7))
+* added  property to all reported responses ([38452b90cebdee3fafef35d8250d869ecb58678c](https://github.com/jarrodek/socket-fetch/commit/38452b90cebdee3fafef35d8250d869ecb58678c))
+* Added cookie behavior during redirection. Cookies are now included into redirect server if match domain and path ([1e4b7040cc2a140eb30c4875acfd5b000220392f](https://github.com/jarrodek/socket-fetch/commit/1e4b7040cc2a140eb30c4875acfd5b000220392f))
+* Added requestUrl for the response that has been redirected. ([86c08d9d97260bb27fb3c0905e614558da90bd60](https://github.com/jarrodek/socket-fetch/commit/86c08d9d97260bb27fb3c0905e614558da90bd60))
+* When redirects are available, the library will not throw error anymore, instead it returns errored response object with the redirect information. ([35cd88cbc35d4c9876c995c8470675bd8c5a338a](https://github.com/jarrodek/socket-fetch/commit/35cd88cbc35d4c9876c995c8470675bd8c5a338a))
+
+
+
 <a name="1.0.52"></a>
 ## [1.0.52](https://github.com/jarrodek/socket-fetch/compare/1.0.51...v1.0.52) (2016-05-05)
 
