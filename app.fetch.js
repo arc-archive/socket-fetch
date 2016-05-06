@@ -1801,11 +1801,12 @@ class SocketFetch extends ArcEventSource {
     var uid = this._request.uri.username();
     var passwd = this._request.uri.password();
     if (uid && passwd) {
-      this.auth = {
+      let auth = {
         'uid': uid,
         'passwd': passwd,
         'method': 'basic'
       };
+      this.auth = new BasicAuth(auth);
     }
   }
 
