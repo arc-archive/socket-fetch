@@ -1,3 +1,13 @@
+<a name="1.0.55"></a>
+## [1.0.55](https://github.com/jarrodek/socket-fetch/compare/1.0.54...v1.0.55) (2016-05-06)
+
+
+### Fix
+
+* fixes and auth object when setting up basic auth object from URL params ([d5ada7928e8ed94258811911dffa859d011fd3a2](https://github.com/jarrodek/socket-fetch/commit/d5ada7928e8ed94258811911dffa859d011fd3a2))
+
+
+
 <a name="1.0.54"></a>
 ## [1.0.54](https://github.com/jarrodek/socket-fetch/compare/1.0.53...v1.0.54) (2016-05-06)
 
