@@ -1796,6 +1796,17 @@ class SocketFetch extends ArcEventSource {
     } else {
       this._connection.useSSL = false;
     }
+
+    // Check if URL contains username and password for basic auth.
+    var uid = this._request.uri.username();
+    var passwd = this._request.uri.password();
+    if (uid && passwd) {
+      this.auth = {
+        'uid': uid,
+        'passwd': passwd,
+        'method': 'basic'
+      };
+    }
   }
 
   getCodeMessage(code) {
