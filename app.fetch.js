@@ -398,15 +398,15 @@ class SocketFetch extends ArcEventSource {
     let obj = null;
     switch (auth.method) {
       case 'ntlm':
-        obj = new NtlmAuth(auth);
+        obj = new FetchNtlmAuth(auth);
         obj.url = this.request.url;
         obj.state = 0;
         break;
       case 'basic':
-        obj = new BasicAuth(auth);
+        obj = new FetchBasicAuth(auth);
         break;
       case 'digest':
-        obj = new DigestAuth(auth);
+        obj = new FetchDigestAuth(auth);
         obj.url = this.request.url;
         obj.httpMethod = this.request.method;
         break;
@@ -1376,7 +1376,7 @@ class SocketFetch extends ArcEventSource {
   handleDigestResponse(digestHeaders) {
     digestHeaders = digestHeaders.slice(digestHeaders.indexOf(':') + 1, -1);
     digestHeaders = digestHeaders.split(',');
-    this.auth = new DigestAuth({});
+    this.auth = new FetchDigestAuth({});
     this.auth.httpMethod = this.request.method;
     this.auth.scheme = digestHeaders[0].split(/\s/)[1];
     for (var i = 0; i < digestHeaders.length; i++) {
@@ -1806,7 +1806,7 @@ class SocketFetch extends ArcEventSource {
         'passwd': passwd,
         'method': 'basic'
       };
-      this.auth = new BasicAuth(auth);
+      this.auth = new FetchBasicAuth(auth);
     }
   }
 

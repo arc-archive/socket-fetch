@@ -4,7 +4,7 @@
   /**
    * A base class for auth methods used in the library.
    */
-  class BasicAuth extends FetchAuth {
+  class FetchBasicAuth extends FetchAuth {
 
     constructor(opts) {
       super(opts);
@@ -17,5 +17,5 @@
     }
   }
 
-  w.BasicAuth = BasicAuth;
+  w.FetchBasicAuth = FetchBasicAuth;
 })(window);

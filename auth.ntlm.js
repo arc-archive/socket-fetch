@@ -459,7 +459,7 @@
    * A base class for auth methods used in the library.
    * On the base of https://github.com/erlandranvinge/ntlm.js/blob/master/ntlm.js
    */
-  class NtlmAuth extends FetchAuth {
+  class FetchNtlmAuth extends FetchAuth {
 
     constructor(opts) {
       super(opts);
@@ -631,5 +631,5 @@
 
   }
 
-  w.NtlmAuth = NtlmAuth;
+  w.FetchNtlmAuth = FetchNtlmAuth;
 })(window);

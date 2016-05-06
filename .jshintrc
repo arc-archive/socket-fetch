@@ -19,8 +19,8 @@
     "URLSearchParams": true,
     "URI": true,
     "Cookies": true,
-    "DigestAuth": true,
-    "NtlmAuth": true,
-    "BasicAuth": true
+    "FetchDigestAuth": true,
+    "FetchNtlmAuth": true,
+    "FetchBasicAuth": true
   }
 }

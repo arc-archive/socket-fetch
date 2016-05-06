@@ -5,7 +5,7 @@
    * A base class for auth methods used in the library.
    * Based on https://github.com/inorganik/digest-auth-request/blob/master/digestAuthRequest.js
    */
-  class DigestAuth extends FetchAuth {
+  class FetchDigestAuth extends FetchAuth {
 
     constructor(opts) {
       super(opts);
@@ -64,5 +64,5 @@
     }
   }
 
-  w.DigestAuth = DigestAuth;
+  w.FetchDigestAuth = FetchDigestAuth;
 })(window);
