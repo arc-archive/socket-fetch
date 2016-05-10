@@ -1,3 +1,13 @@
+<a name="1.0.57"></a>
+## [1.0.57](https://github.com/jarrodek/socket-fetch/compare/1.0.56...v1.0.57) (2016-05-10)
+
+
+### Fix
+
+* Changed string conversion to array buffer and back to support URF-16 strings   ([e6c9ca9a4c97af090205504636b5cf0a96805dda](https://github.com/jarrodek/socket-fetch/commit/e6c9ca9a4c97af090205504636b5cf0a96805dda)), closes [#12](https://github.com/jarrodek/socket-fetch/issues/12)
+
+
+
 <a name="1.0.56"></a>
 ## [1.0.56](https://github.com/jarrodek/socket-fetch/compare/1.0.55...v1.0.56) (2016-05-06)
 
