@@ -1144,21 +1144,39 @@ class SocketFetch extends ArcEventSource {
       return;
     }
     this.log('Processing headers');
-    if (!this._connection.headers) {
-      this._connection.headers = '';
-    }
+    // if (!this._connection.headers) {
+    //   this._connection.headers = '';
+    // }
     var index = this.indexOfSubarray(data, [13, 10, 13, 10]);
     // https://github.com/jarrodek/socket-fetch/issues/3
     var enterIndex = this.indexOfSubarray(data, [13, 10]);
     if (index === -1 && enterIndex !== 0) {
       //end in next chunk
-      this._connection.headers += this.arrayBufferToString(data);
+      // this._connection.headers += this.arrayBufferToString(data);
+      if (!this._connection.headers) {
+        this._connection.headers = data;
+      } else {
+        let sum = new Int8Array(this._connection.headers.length + data.length);
+        sum.set(this._connection.headers);
+        sum.set(data, this._connection.headers.length);
+        this._connection.headers = sum;
+      }
       return null;
     }
+
     if (enterIndex !== 0) {
-      var headersArray = data.subarray(0, index);
-      this._connection.headers += this.arrayBufferToString(headersArray);
+      let headersArray = data.subarray(0, index);
+      if (!this._connection.headers) {
+        this._connection.headers = headersArray;
+      } else {
+        let sum = new Int8Array(this._connection.headers.length + headersArray.length);
+        sum.set(this._connection.headers);
+        sum.set(headersArray, this._connection.headers.length);
+        this._connection.headers = sum;
+      }
+      // this._connection.headers += this.arrayBufferToString(headersArray);
     }
+    this._connection.headers = this.arrayBufferToString(this._connection.headers);
     this._parseHeaders();
     this.state = SocketFetch.BODY;
     var start = index === -1 ? 0 : index;
@@ -1751,12 +1769,22 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return '';
     }
-    var array = new Uint8Array(buff);
-    var str = '';
-    for (var i = 0; i < array.length; ++i) {
-      str += String.fromCharCode(array[i]);
+    if (!!buff.buffer) {
+      // Not a ArrayBuffer, need and instance of AB
+      // It can't just get buff.buffer because it will use original buffer if the buff is a slice
+      // of it.
+      let b = buff.slice(0);
+      buff = b.buffer;
     }
-    return str;
+    var decoder = new TextDecoder('utf-8');
+    var view = new DataView(buff);
+    return decoder.decode(view);
+    // var array = new Uint8Array(buff);
+    // var str = '';
+    // for (var i = 0; i < array.length; ++i) {
+    //   str += String.fromCharCode(array[i]);
+    // }
+    // return str;
   }
   /**
    * Convert a string to an ArrayBuffer.
@@ -1768,12 +1796,15 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return new ArrayBuffer();
     }
-    var buffer = new ArrayBuffer(string.length);
-    var bufferView = new Uint8Array(buffer);
-    for (var i = 0; i < string.length; i++) {
-      bufferView[i] = string.charCodeAt(i);
-    }
-    return buffer;
+    var encoder = new TextEncoder();
+    var encoded = encoder.encode(string);
+    return encoded.buffer;
+    // var buffer = new ArrayBuffer(string.length);
+    // var bufferView = new Uint8Array(buffer);
+    // for (var i = 0; i < string.length; i++) {
+    //   bufferView[i] = string.charCodeAt(i);
+    // }
+    // return buffer;
   }
   /**
    * Set up URL data relevant during making a connection.
