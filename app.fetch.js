@@ -562,7 +562,7 @@ class SocketFetch extends ArcEventSource {
   disconnect() {
     this.log('Disconnect');
     if (!this._connection.socketId) {
-      return;
+      return Promise.resolve();
     }
     return new Promise((resolve) => {
       chrome.sockets.tcp.disconnect(this._connection.socketId, () => {
@@ -1308,12 +1308,10 @@ class SocketFetch extends ArcEventSource {
     this._connection.stats.receive = this._connection.stats._lastReceived -
       this._connection.stats._firstReceived;
     this.state = SocketFetch.DONE;
-    var location = null;
-    if (this._connection.headers && this._connection.headers.has('Location')) {
-      location = this._connection.headers.get('Location');
-    }
+
     var status = this._connection.status;
-    if (status >= 300 && status < 400 && !!location) { //redirect
+    if (status >= 300 && status < 400) { //redirect
+
       if (this.redirect === 'error') {
         this._mainPromise.reject({
           'message': 'Redirects are not allowed',
@@ -1322,13 +1320,39 @@ class SocketFetch extends ArcEventSource {
         this._cleanUp();
         return;
       }
-      // See https://github.com/jarrodek/ChromeRestClient/issues/616#issuecomment-216896456
-      // and https://github.com/jarrodek/socket-fetch/issues/11
-      // Anyway, don't touch it.
-      if (status !== 302 && status !== 307) {
-        this._redirectRequest(location);
-        return;
+
+      // See https://github.com/jarrodek/socket-fetch/issues/13
+      let redirect = false;
+      let redirectOptions = {};
+
+      switch (status) {
+        case 300:
+        case 304:
+        case 305:
+          // do nothing;
+          break;
+        case 301:
+        case 302:
+        case 307:
+          if (['GET','HEAD'].indexOf(this._request.method) !== -1) {
+            redirect = true;
+          }
+          break;
+        case 303:
+          redirect = true;
+          redirectOptions.forceGet = true;
+          break;
       }
+
+      if (redirect) {
+        // Redirect only when you know where to redirect the request.
+        if (this._connection.headers && this._connection.headers.has('Location')) {
+          redirectOptions.location = this._connection.headers.get('Location');
+          this._redirectRequest(redirectOptions);
+          return;
+        }
+      }
+
     } else if (status === 401 && this.auth) {
       switch (this.auth.method) {
         case 'ntlm':
@@ -1471,8 +1495,13 @@ class SocketFetch extends ArcEventSource {
   /**
    * Creates a response and adds it to the redirects list and redirects the request to the
    * new location.
+   *
+   * @param {Object} options A redirection options:
+   * forceGet {Boolean} - If true the redirected request will be GET request
+   * location {String} - location of the resource (redirect uri)
    */
-  _redirectRequest(location) {
+  _redirectRequest(options) {
+    var location = options.location;
     // https://github.com/jarrodek/socket-fetch/issues/5
     let u = URI(location);
     let protocol = u.protocol();
@@ -1541,8 +1570,16 @@ class SocketFetch extends ArcEventSource {
     })
     .then(() => {
       this._request.url = location;
+      if (options.forceGet) {
+        this._request.method = 'GET';
+        //this._request.body = undefined;
+      }
       this._setupUrlData();
-      this._createConnection();
+      // No idea why but without setTimeout the program loses it's scope after calling
+      // the function.
+      window.setTimeout(() => {
+        this._createConnection();
+      }, 0);
     })
     .catch((e) => {
       this._errorRequest({

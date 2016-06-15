@@ -183,9 +183,9 @@ class ArcRequest {
    * @param {Blob|BufferSource|FormData|URLSearchParams|USVString} body A body to send
    */
   set body(body) {
-    if (!body) {
-      throw new Error('Passed body is undefined.');
-    }
+    // if (!body) {
+    //   throw new Error('Passed body is undefined.');
+    // }
     if (this._method === 'GET' || this._method === 'HEAD') {
       throw new Error('Request with GET/HEAD method cannot have body.');
     }
