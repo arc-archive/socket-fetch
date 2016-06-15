@@ -1,3 +1,13 @@
+<a name="1.0.59"></a>
+## [1.0.59](https://github.com/jarrodek/socket-fetch/compare/1.0.58...v1.0.59) (2016-06-15)
+
+
+### Fix
+
+* Fixed all redirection issues. The library will now follow spec when handling redirection  ([232a5677087394250d128b0bb5ca7ce15ea6bfd4](https://github.com/jarrodek/socket-fetch/commit/232a5677087394250d128b0bb5ca7ce15ea6bfd4)), closes [#13](https://github.com/jarrodek/socket-fetch/issues/13)
+
+
+
 <a name="1.0.58"></a>
 ## [1.0.58](https://github.com/jarrodek/socket-fetch/compare/1.0.57...v1.0.58) (2016-05-10)
 
