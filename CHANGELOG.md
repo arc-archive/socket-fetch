@@ -1,3 +1,9 @@
+<a name="1.0.60"></a>
+## [1.0.60](https://github.com/jarrodek/socket-fetch/compare/1.0.59...v1.0.60) (2016-07-19)
+
+
+
+
 <a name="1.0.59"></a>
 ## [1.0.59](https://github.com/jarrodek/socket-fetch/compare/1.0.58...v1.0.59) (2016-06-15)
 
