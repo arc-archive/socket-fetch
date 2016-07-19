@@ -674,7 +674,7 @@ class SocketFetch extends ArcEventSource {
         if (this.auth) {
           options.auth = this.auth;
         } else {
-          let auth = (this._connection.headers &&
+          let auth = (this._connection.headers && this._connection.headers.has &&
             this._connection.headers.has('www-authenticate')) ?
             this._connection.headers.get('www-authenticate') : undefined;
           let aObj = {
@@ -1196,7 +1196,8 @@ class SocketFetch extends ArcEventSource {
     }
 
     if (data.length === 0) {
-      if (this._connection.headers.has('Content-Length')) {
+      if (this._connection.headers && this._connection.headers.has &&
+        this._connection.headers.has('Content-Length')) {
         // If the server do not close connection and clearly indicate that there are no
         // further data to receive the app can close the connection and prepare the response.
         let length = Number(this._connection.headers.get('Content-Length'));
@@ -1346,7 +1347,8 @@ class SocketFetch extends ArcEventSource {
 
       if (redirect) {
         // Redirect only when you know where to redirect the request.
-        if (this._connection.headers && this._connection.headers.has('Location')) {
+        if (this._connection.headers && this._connection.headers.has &&
+          this._connection.headers.has('Location')) {
           redirectOptions.location = this._connection.headers.get('Location');
           this._redirectRequest(redirectOptions);
           return;
@@ -1360,7 +1362,8 @@ class SocketFetch extends ArcEventSource {
           return;
       }
     } else if (status === 401) {
-      if (this._connection.headers.has('www-authenticate')) {
+      if (this._connection.headers && this._connection.headers.has &&
+        this._connection.headers.has('www-authenticate')) {
         let authHeader = this._connection.headers.get('www-authenticate');
         if (authHeader.toLowerCase().indexOf('digest') !== -1) {
           this.handleDigestResponse(authHeader);
@@ -1375,7 +1378,8 @@ class SocketFetch extends ArcEventSource {
 
   handleNtlmResponse() {
     if (this.auth.state === 0) {
-      if (this._connection.headers.has('www-authenticate')) {
+      if (this._connection.headers && this._connection.headers.has &&
+        this._connection.headers.has('www-authenticate')) {
         try {
           this.auth.challenge =
             this.auth.getChallenge(this._connection.headers.get('www-authenticate'));
@@ -1535,7 +1539,8 @@ class SocketFetch extends ArcEventSource {
       this.redirects = new Set();
     }
     var responseCookies = null;
-    if (this._connection.headers && this._connection.headers.has('set-cookie')) {
+    if (this._connection.headers && this._connection.headers.has &&
+      this._connection.headers.has('set-cookie')) {
       responseCookies = this._connection.headers.get('set-cookie');
     }
     this._createResponse({includeRedirects: false})
@@ -1695,7 +1700,8 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return data;
     }
-    if (!this._connection.headers || !this._connection.headers.has('Content-Encoding')) {
+    if (!this._connection.headers || !this._connection.headers.has ||
+      !this._connection.headers.has('Content-Encoding')) {
       return data;
     }
     var ce = this._connection.headers.get('Content-Encoding');
