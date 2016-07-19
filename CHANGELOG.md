@@ -1,3 +1,13 @@
+<a name="1.0.61"></a>
+## [1.0.61](https://github.com/jarrodek/socket-fetch/compare/1.0.60...v1.0.61) (2016-07-19)
+
+
+### Fix
+
+* Fixes a bug where expired cookies were not cleared from the original request, after the request was redirect ([78503ca21de48dd31bcad638d52ef478b784a8a5](https://github.com/jarrodek/socket-fetch/commit/78503ca21de48dd31bcad638d52ef478b784a8a5))
+
+
+
 <a name="1.0.60"></a>
 ## [1.0.60](https://github.com/jarrodek/socket-fetch/compare/1.0.59...v1.0.60) (2016-07-19)
 
