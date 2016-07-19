@@ -1559,7 +1559,7 @@ class SocketFetch extends ArcEventSource {
       }
       var newParser = new Cookies(responseCookies, location);
       newParser.filter();
-      newParser.clearExpired();
+      let expired = newParser.clearExpired();
       if (this._request.headers.has('Cookie')) {
         var oldCookies = this._request.headers.get('Cookie');
         var oldParser = new Cookies(oldCookies, location);
@@ -1567,10 +1567,21 @@ class SocketFetch extends ArcEventSource {
         oldParser.clearExpired();
         oldParser.merge(newParser);
         newParser = oldParser;
+        // remove expired from the new response.
+        newParser.cookies = newParser.cookies.filter((c) => {
+          for (let i = 0, len = expired.length; i < len; i++) {
+            if (expired[i].name === c.name) {
+              return false;
+            }
+          }
+          return true;
+        });
       }
       var str = newParser.toString(true);
       if (str) {
         this._request.headers.set('Cookie', str);
+      } else {
+        this._request.headers.delete('Cookie');
       }
     })
     .then(() => {
