@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var url = `http://127.0.0.1:1337/?chunk=6399&size=${size}`;
     var init = {
       'method': 'GET',
-      'debug': true
+      'debug': false
     };
     var connection = new SocketFetch(url, init);
     return connection.fetch()
@@ -55,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   window.addEventListener('WebComponentsReady', function() {
     console.clear();
     // return;
-    var n = 10489;
+    var n = 21000;
     var then = (res) => {
       if (res) {
         n++;

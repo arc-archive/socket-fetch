@@ -1232,6 +1232,11 @@ class SocketFetch extends ArcEventSource {
     this.log('Processing body');
     if (this._connection.chunked) {
       while (true) {
+        if (this._connection.chunkSize === 0 &&
+          this.indexOfSubarray(data, [13, 10, 13, 10]) === 0) {
+          this.onResponseReady();
+          return;
+        }
         if (!this._connection.chunkSize) {
           data = this.readChunkSize(data);
           this.log('Chunk size: ', this._connection.chunkSize);
@@ -1239,6 +1244,7 @@ class SocketFetch extends ArcEventSource {
             // It may happen that chrome's buffer cuts the data
             // just before the chunk size.
             // It should proceed it in next portion of the data.
+            console.warn('The chunk size was null!');
             return;
           }
           if (!this._connection.chunkSize) {
@@ -1262,6 +1268,10 @@ class SocketFetch extends ArcEventSource {
         this._connection.chunkSize -= size;
         this.log('Body size is: ', this._connection.body.length, ' and chunk size is left is: ',
           this._connection.chunkSize);
+        // debugger;
+        if (data.length === 0) {
+          console.warn('Next chunk will start with CRLF!');
+        }
         data = data.subarray(size + 2); // + CR
         if (data.length === 0) {
           this.log('No more data here. Waiting for new chunk');
@@ -1665,11 +1675,26 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return;
     }
+    // this.log('Attemping to read chunk size from the array. ', array.length, array);
     var index = this.indexOfSubarray(array, [13, 10]);
     if (index === -1) {
       //not found in this portion of data.
       return array;
     }
+    if (index === 0) {
+      // Chrome's buffer cut CRLF after the end of chunk data, without last CLCR, here's to fix it.
+      // debugger;
+      // It can be either new line from the last chunk or end of the message where
+      // the rest of the array is [13, 10, 48, 13, 10, 13, 10]
+      if (this.indexOfSubarray(array, [13, 10, 13, 10]) === 0) {
+        this._connection.chunkSize = 0;
+        return new Uint8Array();
+      } else {
+        array = array.subarray(index + 2);
+        index = this.indexOfSubarray(array, [13, 10]);
+      }
+    }
+    // this.log('Size index: ', index);
     var sizeArray = array.subarray(0, index);
     var sizeHex = this.arrayBufferToString(sizeArray);
     if (!sizeHex || sizeHex === '') {
