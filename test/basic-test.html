@@ -21,15 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </head>
 
 <body>
+  <socket-fetch id="fixture"></socket-fetch>
   <script>
-  var alarms;
-  suite('socket-fetch', function() {
-    setup(function() {
-
-    });
-    teardown(function(done) {
-      done();
-    });
+  suite('<socket-fetch>', function() {
 
     test('Create the request', function(done) {
       var headers = {
@@ -37,15 +31,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       };
       var fd = new FormData();
       fd.append('formField', 'formValue');
-      var blob = new Blob(['{"a": "b", "c": "d"}'], {type: 'application/json'});
+      var blob = new Blob(['{"a": "b", "c": "d"}'], {
+        type: 'application/json'
+      });
       fd.append('formFile', blob);
       var init = {
         'method': 'POST',
         'headers': new Headers(headers),
         'body': fd
       };
-      var connection = new SocketFetch(demo.url, init);
+      var connection = new SocketFetch('http://httpbin.org/post', init);
       expect(connection.request).to.be.an('object');
+      connection.fetch()
+        .then(() => done())
+        .catch((err) => done(err));
+      // done();
     });
   });
   </script>

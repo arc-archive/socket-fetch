@@ -20,7 +20,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-input/paper-textarea.html">
   <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
   <link rel="import" href="../../paper-radio-button/paper-radio-button.html">
-
   <link rel="import" href="../socket-fetch.html">
   <style is="custom-style">
   html,
@@ -36,6 +35,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   .logs div {
     padding: 8px;
   }
+
   paper-input-container,
   paper-textarea {
     width: 100%;
@@ -48,12 +48,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template is="dom-bind">
       <p>Setup a HTTP request that will use <code>Chrome sockets API</code>.</p>
       <section class="panel-settings">
-
         <paper-input-container>
           <label>URL</label>
           <input is="iron-input" type="text" value="{{url::input}}">
         </paper-input-container>
-
         <paper-radio-group selected="{{method}}">
           <paper-radio-button name="GET">GET</paper-radio-button>
           <paper-radio-button name="POST">POST</paper-radio-button>
@@ -62,19 +60,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <paper-radio-button name="HEAD">HEAD</paper-radio-button>
           <paper-radio-button name="OPTIONS">OPTIONS</paper-radio-button>
         </paper-radio-group>
-
         <paper-input-container>
           <label>Content type</label>
           <input is="iron-input" type="text" value="{{contentType::input}}">
         </paper-input-container>
-
         <paper-textarea value="{{headers}}" label="Headers"></paper-textarea>
         <paper-textarea value="{{payload}}" label="Body"></paper-textarea>
-
         <!-- action buttons -->
         <paper-button on-click="makeRequest">Fetch</paper-button>
       </section>
-
       <section class="panel-settings">
         <p>Make request using form data.</p>
         <paper-button on-click="makeRequestFormData">Fetch</paper-button>
@@ -91,166 +85,168 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </div>
   <script>
   (function() {
-  'use strict';
+    'use strict';
 
-  function headersToObject(headersString) {
-    if (!headersString || headersString.trim() === '') {
-      return {};
-    }
-    if (typeof headersString !== 'string') {
-      throw new Error('Headers must be an instance of String.');
-    }
-    var result = {};
-    const headers = headersString.split(/\n/gim);
-
-    for (let i = 0, len = headers.length; i < len; i++) {
-      let line = headers[i].trim();
-      if (line === '') {
-        continue;
+    function headersToObject(headersString) {
+      if (!headersString || headersString.trim() === '') {
+        return {};
       }
-      let sepPosition = line.indexOf(':');
-      if (sepPosition === -1) {
-        result[line] = '';
-        continue;
+      if (typeof headersString !== 'string') {
+        throw new Error('Headers must be an instance of String.');
       }
-      let name = line.substr(0, sepPosition);
-      let value = line.substr(sepPosition + 1).trim();
-      if (name in result) {
-        result[name] += '; ' + value;
-      } else {
-        result[name] = value;
+      var result = {};
+      const headers = headersString.split(/\n/gim);
+
+      for (let i = 0, len = headers.length; i < len; i++) {
+        let line = headers[i].trim();
+        if (line === '') {
+          continue;
+        }
+        let sepPosition = line.indexOf(':');
+        if (sepPosition === -1) {
+          result[line] = '';
+          continue;
+        }
+        let name = line.substr(0, sepPosition);
+        let value = line.substr(sepPosition + 1).trim();
+        if (name in result) {
+          result[name] += '; ' + value;
+        } else {
+          result[name] = value;
+        }
       }
-    }
-    return result;
-  };
+      return result;
+    };
 
-  var demo = document.querySelector('template');
-  demo.logs = [];
-  demo.url = '';
-  demo.payload = '';
-  demo.headers = '';
-  demo.method = 'POST';
+    var demo = document.querySelector('template');
+    demo.logs = [];
+    demo.url = '';
+    demo.payload = '';
+    demo.headers = '';
+    demo.method = 'POST';
 
-  demo.addEventListener('dom-change', function() {
-    // demo.url = 'https://chromerestclient.appspot.com/test?p=json';
-    // demo.url = 'http://localhost:8081/redirect';
-    // demo.url = 'https://httpbin.org/range/75776?chunk_size=150';
-    // demo.url = 'https://chromerestclient.appspot.com/test?p=redirect';
-    demo.url = 'http://localhost:8081/post-redirect';
-    // demo.url = 'http://192.168.1.25/';
-    // demo.url = 'http://172.16.10.110/';
-    // demo.set('payload', '{"test":"request"}');
-    demo.set('method', 'GET');
-    demo.set('headers',
-    `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    demo.addEventListener('dom-change', function() {
+      // demo.url = 'https://chromerestclient.appspot.com/test?p=json';
+      // demo.url = 'http://localhost:8081/redirect';
+      // demo.url = 'https://httpbin.org/range/75776?chunk_size=150';
+      // demo.url = 'https://chromerestclient.appspot.com/test?p=redirect';
+      demo.url = 'http://localhost:8081/post-redirect';
+      // demo.url = 'http://192.168.1.25/';
+      // demo.url = 'http://172.16.10.110/';
+      // demo.set('payload', '{"test":"request"}');
+      demo.set('method', 'GET');
+      demo.set('headers',
+        `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate
 Accept-Language: en-US,en;q=0.8,
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2652.0 Safari/537.36
     `);
-    //Content-Type: application/json
-  });
-  demo.makeRequest = function() {
-    var init = {
-      'method': demo.method,
-      'headers': new Headers(headersToObject(demo.headers)),
-      'debug': true,
-      'timeout': 5000,
-      // 'auth': {
-      //   'uid': 'test',
-      //   'passwd': 'test',
-      //   'domain': 'workgroup',
-      //   'method': 'ntlm'
-      // }
-    };
-    if (demo.method === 'POST') {
-      init.body = demo.payload;
-    }
-    demo.push('logs', {
-      log: 'Making a request.'
+      //Content-Type: application/json
     });
-    var connection = new SocketFetch(demo.url, init);
-    connection.fetch()
-      .then((response) => {
-        if (response.ok) {
-          response.text().then((result) => {
-            demo.push('logs', {
-              log: 'Received response.'
-            });
-            console.log('Fetch result', result);
-          })
-          .catch((cause) => {
-            demo.push('logs', {
-              log: 'Received error.'
-            });
-            console.error('Error during fetch', cause);
-          });
-        } else {
-          let log = `Received error response of status ${response.status} `;
-          log += response.statusText ? response.statusText : '';
-          demo.push('logs', {
-            log: log
-          });
-          console.log('Fetch result', response);
-        }
-      })
-      .catch((cause) => {
-        demo.push('logs', {
-          log: 'Received error.'
-        });
-        console.error('Error during fetch:');
-        console.dir(cause);
+    demo.makeRequest = function() {
+      var init = {
+        'method': demo.method,
+        'headers': new Headers(headersToObject(demo.headers)),
+        'debug': true,
+        'timeout': 5000,
+        // 'auth': {
+        //   'uid': 'test',
+        //   'passwd': 'test',
+        //   'domain': 'workgroup',
+        //   'method': 'ntlm'
+        // }
+      };
+      if (demo.method === 'POST') {
+        init.body = demo.payload;
+      }
+      demo.push('logs', {
+        log: 'Making a request.'
       });
-  };
-  demo.makeRequestFormData = function() {
-    var headers = {
-      'Content-Type': 'multipart/form-data'
-    };
-    var fd = new FormData();
-    fd.append('formField', 'formValue');
-    var blob = new Blob(['{"a": "b", "c": "d"}'], {type: 'application/json'});
-    fd.append('formFile', blob);
-    var init = {
-      'method': 'POST',
-      'headers': new Headers(headers),
-      'body': fd
-    };
-    demo.push('logs', {
-      log: 'Making a request.'
-    });
-    var connection = new SocketFetch(demo.url, init);
-    connection.fetch()
-      .then((response) => {
-        if (response.ok) {
-          response.text().then((result) => {
+      var connection = new SocketFetch(demo.url, init);
+      connection.fetch()
+        .then((response) => {
+          if (response.ok) {
+            response.text().then((result) => {
+                demo.push('logs', {
+                  log: 'Received response.'
+                });
+                console.log('Fetch result', result);
+              })
+              .catch((cause) => {
+                demo.push('logs', {
+                  log: 'Received error.'
+                });
+                console.error('Error during fetch', cause);
+              });
+          } else {
+            let log = `Received error response of status ${response.status} `;
+            log += response.statusText ? response.statusText : '';
             demo.push('logs', {
-              log: 'Received response.'
+              log: log
             });
-            console.log('Fetch result', result);
-          })
-          .catch((cause) => {
-            demo.push('logs', {
-              log: 'Received error.'
-            });
-            console.error('Error during fetch:');
-            console.error(cause);
-          });
-        } else {
-          let log = `Received error response of status ${response.status} `;
-          log += response.statusText ? response.statusText : '';
+            console.log('Fetch result', response);
+          }
+        })
+        .catch((cause) => {
           demo.push('logs', {
-            log: log
+            log: 'Received error.'
           });
-          console.log('Fetch result', response);
-        }
-      })
-      .catch((cause) => {
-        demo.push('logs', {
-          log: 'Received error.'
+          console.error('Error during fetch:');
+          console.dir(cause);
         });
-        console.error('Error during fetch:');
-        console.dir(cause);
+    };
+    demo.makeRequestFormData = function() {
+      var headers = {
+        'Content-Type': 'multipart/form-data'
+      };
+      var fd = new FormData();
+      fd.append('formField', 'formValue');
+      var blob = new Blob(['{"a": "b", "c": "d"}'], {
+        type: 'application/json'
       });
-  };
+      fd.append('formFile', blob);
+      var init = {
+        'method': 'POST',
+        'headers': new Headers(headers),
+        'body': fd
+      };
+      demo.push('logs', {
+        log: 'Making a request.'
+      });
+      var connection = new SocketFetch(demo.url, init);
+      connection.fetch()
+        .then((response) => {
+          if (response.ok) {
+            response.text().then((result) => {
+                demo.push('logs', {
+                  log: 'Received response.'
+                });
+                console.log('Fetch result', result);
+              })
+              .catch((cause) => {
+                demo.push('logs', {
+                  log: 'Received error.'
+                });
+                console.error('Error during fetch:');
+                console.error(cause);
+              });
+          } else {
+            let log = `Received error response of status ${response.status} `;
+            log += response.statusText ? response.statusText : '';
+            demo.push('logs', {
+              log: log
+            });
+            console.log('Fetch result', response);
+          }
+        })
+        .catch((cause) => {
+          demo.push('logs', {
+            log: 'Received error.'
+          });
+          console.error('Error during fetch:');
+          console.dir(cause);
+        });
+    };
   })();
   </script>
 </body>

@@ -15,14 +15,64 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../socket-fetch.html">
 </head>
 
 <body>
+  <p>Test passed for n=<span id="counter"></span></p>
+  <p id="result"></p>
   <script>
+  //node test-srv.js
+
+  var counter = document.querySelector('#counter');
+  var result = document.querySelector('#result');
+  function run(size) {
+    // var url = `http://127.0.0.1:5000/range/${size}`;
+    var url = `http://127.0.0.1:1337/?chunk=6399&size=${size}`;
+    var init = {
+      'method': 'GET',
+      'debug': true
+    };
+    var connection = new SocketFetch(url, init);
+    return connection.fetch()
+      .then((response) => {
+        return response.text().then((result) => {
+          if (result.length !== size) {
+            console.log(`Expected length of ${size}, ${result.length} given.`);
+            result.innerText = `Expected length of ${size}, ${result.length} given.`;
+            return false;
+          }
+          counter.innerText = size;
+          return true;
+        });
+      })
+      .catch((err) => {
+        console.info('There was an error', err);
+        return false;
+      });
+  }
+  window.addEventListener('WebComponentsReady', function() {
+    console.clear();
+    // return;
+    var n = 10489;
+    var then = (res) => {
+      if (res) {
+        n++;
+        // window.setTimeout(() => {
+        //   run(n).then(then);
+        // }, 500);
+        run(n).then(then);
+      } else {
+        console.log('Test ended.');
+      }
+    };
+    run(n).then(then);
+  });
   // Load and run all tests (.html, .js):
-  WCT.loadSuites([
-    'basic-test.html',
-  ]);
+  // WCT.loadSuites([
+  //   'basic-test.html',
+  // ]);
   </script>
 </body>
 
