@@ -1,3 +1,4 @@
+
 # Socket fetch
 
 The HTTP client transport based on [chrome.sockets.tcp] API.
@@ -5,19 +6,19 @@ The HTTP client transport based on [chrome.sockets.tcp] API.
 ## Getting started
 Bower the library
 ```
-bower install socket-fetch
+bower install --save advanced-rest-client/socket-fetch
 ```
 And import it into your project using web components.
 ```html
 <link rel="import" href="bower-components/socket-fetch/socket-fetch.html">
 ```
 Now you can use following classes:
-* ArcEventTarget
-* ArcEventSource
-* ArcRequest
-* ArcResponse
-* SocketFetch
-* HttpParser
+ArcEventTarget
+ArcEventSource
+ArcRequest
+ArcResponse
+SocketFetch
+HttpParser
 
 The Arc prefix comes from [Advanced Rest Client] project.
 
@@ -100,8 +101,8 @@ Second argument may have following options:
 Regular Response object will not contain all headers in the response. ArcResponse class however will return all received headers from the server - even the prohibited ones. Other properties and methods are inherited from the Response object.
 
 Additionally the ArcResponse will contain two custom fields:
-* redirects {Set<ArcResponse>} - A list of responses that lead to redirection
-* stats {Set<Object>} - Some stats about the request and response. It is the same as `timings` object in HAR 1.2 specification.
+redirects {Set<ArcResponse>} - A list of responses that lead to redirection
+stats {Set<Object>} - Some stats about the request and response. It is the same as `timings` object in HAR 1.2 specification.
 
 ## Import scripts (web workers)
 This library uses web workers. Sometimes it is necessary to change import path of the library.
