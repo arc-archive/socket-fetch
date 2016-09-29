@@ -1,3 +1,13 @@
+<a name="1.0.64"></a>
+## [1.0.64](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.63...v1.0.64) (2016-09-29)
+
+
+### Update
+
+* Updated docs ([4c8bad22a0db8efb51f26b7017c80d5e5b99546f](https://github.com/advanced-rest-client/socket-fetch/commit/4c8bad22a0db8efb51f26b7017c80d5e5b99546f))
+
+
+
 <a name="1.0.63"></a>
 ## [1.0.63](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.62...v1.0.63) (2016-08-25)
 
