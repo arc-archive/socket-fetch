@@ -77,6 +77,7 @@ class SocketFetch extends ArcEventSource {
    */
   constructor(url, opts) {
     super();
+    this._logs = [];
     /**
      * A original request object.
      * This will contain data passed to the constructor.
@@ -567,12 +568,12 @@ class SocketFetch extends ArcEventSource {
     return new Promise((resolve) => {
       chrome.sockets.tcp.disconnect(this._connection.socketId, () => {
         if (chrome.runtime.lastError) {
-          console.warn(chrome.runtime.lastError);
+          this.log(chrome.runtime.lastError, 'warn');
         }
         this._readyState = 0;
         chrome.sockets.tcp.close(this._connection.socketId, () => {
           if (chrome.runtime.lastError) {
-            console.warn(chrome.runtime.lastError);
+            this.log(chrome.runtime.lastError, 'warn');
           }
           this._connection.socketId = undefined;
           resolve();
@@ -585,6 +586,7 @@ class SocketFetch extends ArcEventSource {
     if (this.debug) {
       console.log.apply(console, entry);
     }
+    this._logs.push(entry);
   }
   /**
    * Calling abort function will immidietly result with Promise rejection.
@@ -694,6 +696,8 @@ class SocketFetch extends ArcEventSource {
         }
       }
       this._response = new ArcResponse(body, options);
+      this._response.logs = this._logs;
+      this._logs = [];
     });
   }
   /**
@@ -1244,7 +1248,7 @@ class SocketFetch extends ArcEventSource {
             // It may happen that chrome's buffer cuts the data
             // just before the chunk size.
             // It should proceed it in next portion of the data.
-            console.warn('The chunk size was null!');
+            this.log('The chunk size was null!', 'warn');
             return;
           }
           if (!this._connection.chunkSize) {
@@ -1270,7 +1274,7 @@ class SocketFetch extends ArcEventSource {
           this._connection.chunkSize);
         // debugger;
         if (data.length === 0) {
-          console.warn('Next chunk will start with CRLF!');
+          this.log('Next chunk will start with CRLF!', 'warn');
         }
         data = data.subarray(size + 2); // + CR
         if (data.length === 0) {
@@ -1628,6 +1632,7 @@ class SocketFetch extends ArcEventSource {
     this._connection._readFn = undefined;
     this._connection._errorFn = undefined;
     this.redirects = undefined;
+    this._logs = [];
     this._cancelTimer();
   }
   /** Clean up for redirect */
