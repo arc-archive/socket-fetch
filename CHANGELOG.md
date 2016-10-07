@@ -1,3 +1,13 @@
+<a name="1.0.65"></a>
+## [1.0.65](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.64...v1.0.65) (2016-10-07)
+
+
+### New
+
+* Added log messages to the response object ([0a481222a8ede7fee3c25d0a7d8ca4187ad6f038](https://github.com/advanced-rest-client/socket-fetch/commit/0a481222a8ede7fee3c25d0a7d8ca4187ad6f038))
+
+
+
 <a name="1.0.64"></a>
 ## [1.0.64](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.63...v1.0.64) (2016-09-29)
 
