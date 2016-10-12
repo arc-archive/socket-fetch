@@ -806,24 +806,25 @@ class SocketFetch extends ArcEventSource {
   }
 
   generateNtlmMessage() {
-    return new Promise((resolve) => {
+    if (this.auth.state === 0) {
       let orygHeaders = this._request.headers;
-      let msg;
-      if (this.auth.state === 0) {
-        msg = this.auth.createMessage1(this._connection.host);
-      } else if (this.auth.state === 1) {
-        msg = this.auth.createMessage3(this.auth.challenge, this._connection.host);
-        this.auth.state = 2;
-      }
+      let msg = this.auth.createMessage1(this._connection.host);
       this._request.headers = new Headers({
         'Authorization': 'NTLM ' + msg.toBase64()
       });
-      this._createMessageBuffer()
+      return this._createMessageBuffer()
       .then((buffer) => {
         this._request.headers = orygHeaders;
-        resolve(buffer);
+        return buffer;
       });
-    });
+    }
+    if (this.auth.state === 1) {
+      let msg = this.auth.createMessage3(this.auth.challenge, this._connection.host);
+      this.auth.state = 2;
+      this._request.headers.set('Authorization', 'NTLM ' + msg.toBase64());
+      return this.generateMessage();
+    }
+    return Promise.reject('Unknown auth state...');
   }
 
   setupBasicAuth() {

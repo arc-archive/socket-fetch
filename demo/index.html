@@ -132,16 +132,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // demo.url = 'https://chromerestclient.appspot.com/test?p=redirect';
       demo.url = 'http://localhost:8081/post-redirect';
       // demo.url = 'http://192.168.1.25/';
-      // demo.url = 'http://172.16.10.110/';
-      // demo.set('payload', '{"test":"request"}');
-      demo.set('method', 'GET');
+      demo.url = 'http://localhost:8081/ntlm';
+      demo.set('payload', '{"test":"request"}');
+      demo.set('method', 'POST');
       demo.set('headers',
         `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate
 Accept-Language: en-US,en;q=0.8,
 User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2652.0 Safari/537.36
+Content-Type: application/json
     `);
-      //Content-Type: application/json
     });
     demo.makeRequest = function() {
       var init = {
@@ -149,12 +149,12 @@ User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Geck
         'headers': new Headers(headersToObject(demo.headers)),
         'debug': true,
         'timeout': 5000,
-        // 'auth': {
-        //   'uid': 'test',
-        //   'passwd': 'test',
-        //   'domain': 'workgroup',
-        //   'method': 'ntlm'
-        // }
+        'auth': {
+          'uid': 'test',
+          'passwd': 'test',
+          'domain': 'workgroup',
+          'method': 'ntlm'
+        }
       };
       if (demo.method === 'POST') {
         init.body = demo.payload;
