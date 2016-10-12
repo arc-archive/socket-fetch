@@ -1,3 +1,13 @@
+<a name="1.0.66"></a>
+## [1.0.66](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.65...v1.0.66) (2016-10-12)
+
+
+### Fix
+
+* Fixes 14 - passing headers and payload after NTLM authentication ([158ec4f63aba892ef547edd8d9c61bff8c8b11cb](https://github.com/advanced-rest-client/socket-fetch/commit/158ec4f63aba892ef547edd8d9c61bff8c8b11cb))
+
+
+
 <a name="1.0.65"></a>
 ## [1.0.65](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.64...v1.0.65) (2016-10-07)
 
