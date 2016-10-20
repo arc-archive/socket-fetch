@@ -1011,7 +1011,7 @@ class SocketFetch extends ArcEventSource {
     if (this.aborted) {
       return;
     }
-    if (sendInfo.bytesWritten < 0) {
+    if (sendInfo.bytesSent < 0) {
       this.log('Error writing to socket. Bytes sent: ' + sendInfo.bytesSent);
       this._mainPromise.reject(new Error('Couldn\'t find host.'));
       this._cleanUp();
@@ -1020,7 +1020,7 @@ class SocketFetch extends ArcEventSource {
     chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     this.log('Written message. Bytes sent: ' + sendInfo.bytesSent);
     this._dispatchCustomEvent('sendheaders', {
-      bytesWritten: sendInfo.bytesWritten
+      bytesWritten: sendInfo.bytesSent
     });
     this._dispatchCustomEvent('loadstart');
   }
