@@ -1019,6 +1019,9 @@ class SocketFetch extends ArcEventSource {
     }
     chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     this.log('Written message. Bytes sent: ' + sendInfo.bytesSent);
+    this._dispatchCustomEvent('sendheaders', {
+      bytesWritten: sendInfo.bytesWritten
+    });
     this._dispatchCustomEvent('loadstart');
   }
   /**
@@ -1032,6 +1035,7 @@ class SocketFetch extends ArcEventSource {
     if (this.state === SocketFetch.STATUS) {
       this._connection.stats._firstReceived = now;
       this._connection.stats.wait = now - this._connection.stats._waitingStart;
+      this._dispatchCustomEvent('firstbyte');
     } else {
       this._connection.stats.receive = now - this._connection.stats._firstReceived;
     }
