@@ -1,3 +1,13 @@
+<a name="1.0.68"></a>
+## [1.0.68](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.66...v1.0.68) (2016-10-20)
+
+
+### Fix
+
+* Fixed variable name for socet sent info ([ee3248349bad1d0cd6de729fd0d13992474c5b55](https://github.com/advanced-rest-client/socket-fetch/commit/ee3248349bad1d0cd6de729fd0d13992474c5b55))
+
+
+
 <a name="1.0.67"></a>
 ## [1.0.67](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.66...v1.0.67) (2016-10-20)
 
