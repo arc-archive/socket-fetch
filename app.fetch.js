@@ -1166,10 +1166,17 @@ class SocketFetch extends ArcEventSource {
       return;
     }
     this.log('Processing headers');
-    // if (!this._connection.headers) {
-    //   this._connection.headers = '';
-    // }
+    // Looking for end of headers section
     var index = this.indexOfSubarray(data, [13, 10, 13, 10]);
+    var padding = 4;
+    if (index === -1) {
+      // It can also be 2x ASCII 10
+      var _index = this.indexOfSubarray(data, [10, 10]);
+      if (_index !== -1) {
+        index = _index;
+        padding = 2;
+      }
+    }
     // https://github.com/jarrodek/socket-fetch/issues/3
     var enterIndex = this.indexOfSubarray(data, [13, 10]);
     if (index === -1 && enterIndex !== 0) {
@@ -1202,7 +1209,7 @@ class SocketFetch extends ArcEventSource {
     this._parseHeaders();
     this.state = SocketFetch.BODY;
     var start = index === -1 ? 0 : index;
-    var move = (enterIndex === 0) ? 2 : 4;
+    var move = (enterIndex === 0) ? 2 : padding;
     data = data.subarray(start + move);
 
     return this._postHeaders(data);
