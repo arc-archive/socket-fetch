@@ -123,8 +123,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     demo.url = '';
     demo.payload = '';
     demo.headers = '';
-    demo.method = 'POST';
-
+    // demo.method = 'POST';
+    demo.method = 'GET';
     demo.addEventListener('dom-change', function() {
       // demo.url = 'https://chromerestclient.appspot.com/test?p=json';
       // demo.url = 'http://localhost:8081/redirect';
@@ -133,8 +133,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       demo.url = 'http://localhost:8081/post-redirect';
       // demo.url = 'http://192.168.1.25/';
       demo.url = 'http://localhost:8081/ntlm';
-      demo.set('payload', '{"test":"request"}');
-      demo.set('method', 'POST');
+      // demo.set('payload', '{"test":"request"}');
+      // demo.set('method', 'POST');
       demo.set('headers',
         `Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
 Accept-Encoding: gzip, deflate
@@ -149,12 +149,12 @@ Content-Type: application/json
         'headers': new Headers(headersToObject(demo.headers)),
         'debug': true,
         'timeout': 5000,
-        'auth': {
-          'uid': 'test',
-          'passwd': 'test',
-          'domain': 'workgroup',
-          'method': 'ntlm'
-        }
+        // 'auth': {
+        //   'uid': 'test',
+        //   'passwd': 'test',
+        //   'domain': 'workgroup',
+        //   'method': 'ntlm'
+        // }
       };
       if (demo.method === 'POST') {
         init.body = demo.payload;
