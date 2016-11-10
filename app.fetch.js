@@ -1049,7 +1049,15 @@ class SocketFetch extends ArcEventSource {
       try {
         this._processSocketMessage(readInfo.data);
       } catch (e) {
-        console.error('Fix me please', e);
+        if (this.state === SocketFetch.STATUS ||
+          this.state === SocketFetch.HEADERS) {
+          // The response is totally wrong!
+          this._errorRequest({
+            'message': e.message || 'Unknown error occurred'
+          });
+          return;
+        }
+        console.error('Error occured reading part of the message', e);
       }
       chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     }
@@ -1519,6 +1527,7 @@ class SocketFetch extends ArcEventSource {
   // Finishes the response with error message.
   _errorRequest(opts) {
     this.aborted = true;
+    this.state = SocketFetch.DONE;
     var message;
     if (opts.code && !opts.message) {
       message = this.getCodeMessage(opts.code);
