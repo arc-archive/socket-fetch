@@ -447,7 +447,8 @@ class SocketFetch extends ArcEventSource {
           this._connection.port);
         this._readyState = 1;
         this._onConnected();
-      }).catch((cause) => {
+      })
+      .catch((cause) => {
         if (this.redirects) {
           // There were a redirects so it has something to display.
           // Don't just throw an error, construct a response that is errored.
@@ -1518,7 +1519,6 @@ class SocketFetch extends ArcEventSource {
   // Finishes the response with error message.
   _errorRequest(opts) {
     this.aborted = true;
-    this._cleanUp();
     var message;
     if (opts.code && !opts.message) {
       message = this.getCodeMessage(opts.code);
@@ -1534,6 +1534,7 @@ class SocketFetch extends ArcEventSource {
       error: error
     });
     this._cancelTimer();
+    this._cleanUp();
   }
 
   /**
