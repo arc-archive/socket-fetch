@@ -447,7 +447,8 @@ class SocketFetch extends ArcEventSource {
           this._connection.port);
         this._readyState = 1;
         this._onConnected();
-      }).catch((cause) => {
+      })
+      .catch((cause) => {
         if (this.redirects) {
           // There were a redirects so it has something to display.
           // Don't just throw an error, construct a response that is errored.
@@ -1048,7 +1049,15 @@ class SocketFetch extends ArcEventSource {
       try {
         this._processSocketMessage(readInfo.data);
       } catch (e) {
-        console.error('Fix me please', e);
+        if (this.state === SocketFetch.STATUS ||
+          this.state === SocketFetch.HEADERS) {
+          // The response is totally wrong!
+          this._errorRequest({
+            'message': e.message || 'Unknown error occurred'
+          });
+          return;
+        }
+        console.error('Error occured reading part of the message', e);
       }
       chrome.sockets.tcp.setPaused(this._connection.socketId, false);
     }
@@ -1122,8 +1131,18 @@ class SocketFetch extends ArcEventSource {
     }
     this.log('Processing status');
     var index = this.indexOfSubarray(data, [13, 10]);
+    var padding = 2;
+    if (index === -1) {
+      index = this.indexOfSubarray(data, [10]);
+      if (index === -1) {
+        this._errorRequest({
+          'message': 'Unknown server response.'
+        });
+      }
+      padding = 1;
+    }
     var statusArray = data.subarray(0, index);
-    data = data.subarray(index + 2);
+    data = data.subarray(index + padding);
     var statusLine = this.arrayBufferToString(statusArray);
     statusLine = statusLine.replace(/HTTP\/\d(\.\d)?\s/, '');
     var delimPos = statusLine.indexOf(' ');
@@ -1139,6 +1158,9 @@ class SocketFetch extends ArcEventSource {
     if (status !== status) {
       status = 0;
     }
+    if (msg && msg.indexOf('\n') !== -1) {
+      msg = msg.split('\n')[0];
+    }
     this._connection.status = status;
     this._connection.statusMessage = msg;
     this.log('Received status', this._connection.status, this._connection.statusMessage);
@@ -1153,10 +1175,17 @@ class SocketFetch extends ArcEventSource {
       return;
     }
     this.log('Processing headers');
-    // if (!this._connection.headers) {
-    //   this._connection.headers = '';
-    // }
+    // Looking for end of headers section
     var index = this.indexOfSubarray(data, [13, 10, 13, 10]);
+    var padding = 4;
+    if (index === -1) {
+      // It can also be 2x ASCII 10
+      var _index = this.indexOfSubarray(data, [10, 10]);
+      if (_index !== -1) {
+        index = _index;
+        padding = 2;
+      }
+    }
     // https://github.com/jarrodek/socket-fetch/issues/3
     var enterIndex = this.indexOfSubarray(data, [13, 10]);
     if (index === -1 && enterIndex !== 0) {
@@ -1189,7 +1218,7 @@ class SocketFetch extends ArcEventSource {
     this._parseHeaders();
     this.state = SocketFetch.BODY;
     var start = index === -1 ? 0 : index;
-    var move = (enterIndex === 0) ? 2 : 4;
+    var move = (enterIndex === 0) ? 2 : padding;
     data = data.subarray(start + move);
 
     return this._postHeaders(data);
@@ -1497,7 +1526,8 @@ class SocketFetch extends ArcEventSource {
   }
   // Finishes the response with error message.
   _errorRequest(opts) {
-    this._cleanUp();
+    this.aborted = true;
+    this.state = SocketFetch.DONE;
     var message;
     if (opts.code && !opts.message) {
       message = this.getCodeMessage(opts.code);
@@ -1513,6 +1543,7 @@ class SocketFetch extends ArcEventSource {
       error: error
     });
     this._cancelTimer();
+    this._cleanUp();
   }
 
   /**

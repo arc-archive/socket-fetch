@@ -1,3 +1,20 @@
+<a name="1.0.69"></a>
+## [1.0.69](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.66...v1.0.69) (2016-11-10)
+
+
+### Fix
+
+* Fixed issue #15 - upodated parsers to adjust number of consumed characters to the real value of new lines ([331261edbc9afb636d13bc8b67d6338c688362eb](https://github.com/advanced-rest-client/socket-fetch/commit/331261edbc9afb636d13bc8b67d6338c688362eb)), closes [#15](https://github.com/advanced-rest-client/socket-fetch/issues/15)
+* Fixed issue #16 - Now calling error will call promise's reject function ([e32f948a77534523258e7038f57a430ae1f89f26](https://github.com/advanced-rest-client/socket-fetch/commit/e32f948a77534523258e7038f57a430ae1f89f26)), closes [#16](https://github.com/advanced-rest-client/socket-fetch/issues/16)
+* Fixed variable name for socet sent info ([ee3248349bad1d0cd6de729fd0d13992474c5b55](https://github.com/advanced-rest-client/socket-fetch/commit/ee3248349bad1d0cd6de729fd0d13992474c5b55))
+* Fixes #15 and #17 - new line as "10" ASCII only and status message error ([8f4652ef0214ba411718a182b02c037b3ae4ad54](https://github.com/advanced-rest-client/socket-fetch/commit/8f4652ef0214ba411718a182b02c037b3ae4ad54)), closes [#15](https://github.com/advanced-rest-client/socket-fetch/issues/15) [#17](https://github.com/advanced-rest-client/socket-fetch/issues/17)
+
+### Update
+
+* Fixed error that hasn't been supported earlier. ([4267425932e508d3727afb73d07017b22a63ab7d](https://github.com/advanced-rest-client/socket-fetch/commit/4267425932e508d3727afb73d07017b22a63ab7d))
+
+
+
 <a name="1.0.68"></a>
 ## [1.0.68](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.66...v1.0.68) (2016-10-20)
 
