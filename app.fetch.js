@@ -1122,8 +1122,18 @@ class SocketFetch extends ArcEventSource {
     }
     this.log('Processing status');
     var index = this.indexOfSubarray(data, [13, 10]);
+    var padding = 2;
+    if (index === -1) {
+      index = this.indexOfSubarray(data, [10]);
+      if (index === -1) {
+        this._errorRequest({
+          'message': 'Unknown server response.'
+        });
+      }
+      padding = 1;
+    }
     var statusArray = data.subarray(0, index);
-    data = data.subarray(index + 2);
+    data = data.subarray(index + padding);
     var statusLine = this.arrayBufferToString(statusArray);
     statusLine = statusLine.replace(/HTTP\/\d(\.\d)?\s/, '');
     var delimPos = statusLine.indexOf(' ');
@@ -1138,6 +1148,9 @@ class SocketFetch extends ArcEventSource {
     status = Number(status);
     if (status !== status) {
       status = 0;
+    }
+    if (msg && msg.indexOf('\n') !== -1) {
+      msg = msg.split('\n')[0];
     }
     this._connection.status = status;
     this._connection.statusMessage = msg;
@@ -1497,6 +1510,7 @@ class SocketFetch extends ArcEventSource {
   }
   // Finishes the response with error message.
   _errorRequest(opts) {
+    this.aborted = true;
     this._cleanUp();
     var message;
     if (opts.code && !opts.message) {
