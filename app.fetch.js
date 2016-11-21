@@ -868,9 +868,9 @@ class SocketFetch extends ArcEventSource {
    */
   _createMessageBuffer(fileBuffer) {
     var headers = [];
-    var path = this._request.uri.path();
-    var search = this._request.uri.search();
-    var hash = this._request.uri.hash();
+    var path = this._request.uri.pathname;
+    var search = this._request.uri.search;
+    var hash = this._request.uri.hash;
     if (search) {
       path += search;
     }
@@ -1510,6 +1510,7 @@ class SocketFetch extends ArcEventSource {
    */
   _publishResponse(opts) {
     this._request.messageSent = this._connection.messageSent;
+    delete this._request._uri;
     this._createResponse(opts)
     .then(() => {
       this._dispatchCustomEvent('load', {
@@ -1557,14 +1558,14 @@ class SocketFetch extends ArcEventSource {
   _redirectRequest(options) {
     var location = options.location;
     // https://github.com/jarrodek/socket-fetch/issues/5
-    let u = URI(location);
-    let protocol = u.protocol();
+    let u = URL(location);
+    let protocol = u.protocol;
     if (protocol === '') {
-      let path = u.path();
+      let path = u.pathname;
       if (path && path[0] !== '/') {
         path = '/' + path;
       }
-      location = this._request.uri.origin() + path;
+      location = this._request.uri.origin + path;
     }
     // check if this is infinite loop
     if (this.redirects) {
@@ -1930,18 +1931,21 @@ class SocketFetch extends ArcEventSource {
    * Set up URL data relevant during making a connection.
    */
   _setupUrlData() {
-    var port = this._request.uri.port();
-    var protocol = this._request.uri.protocol();
+    var port = this._request.uri.port;
+    var protocol = this._request.uri.protocol;
+    if (protocol) {
+      protocol = protocol.replace(':', '');
+    }
     if (!port) {
       if (protocol in this.protocol2port) {
         port = this.protocol2port[protocol];
       } else {
         port = 80;
       }
-      this._request.uri.port(port);
+      this._request.uri.port = port;
     }
     this._connection.port = Number(port);
-    this._connection.host = this._request.uri.host().replace(':' + port, '');
+    this._connection.host = this._request.uri.hostname;
     if (protocol === 'https' || this._connection.port === 443) {
       this._connection.useSSL = true;
     } else {
@@ -1949,8 +1953,8 @@ class SocketFetch extends ArcEventSource {
     }
 
     // Check if URL contains username and password for basic auth.
-    var uid = this._request.uri.username();
-    var passwd = this._request.uri.password();
+    var uid = this._request.uri.username;
+    var passwd = this._request.uri.password;
     if (uid && passwd) {
       let auth = {
         'uid': uid,

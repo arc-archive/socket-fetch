@@ -21,7 +21,6 @@
   ],
   "private": false,
   "dependencies": {
-    "uri.js": "medialize/URI.js#^1.17.0",
     "zlib": "imaya/zlib.js#^0.2.0",
     "cookie-parser": "advanced-rest-client/cookie-parser#^1.0.2",
     "crypto-js": "^3.1.6"
