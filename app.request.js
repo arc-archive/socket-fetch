@@ -15,12 +15,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  ******************************************************************************/
-/* global HttpParser, Request, URI, Headers */
+/* global HttpParser, Request, Headers */
 /**
  * {@link ArcRequest} class behaves the same way as JavaScript's Request class
  * but it won't set guqards for Headers object.
- *
- * Note: This object uses URI.js library.
  */
 class ArcRequest {
   /**
@@ -214,7 +212,7 @@ class ArcRequest {
     if (!url) {
       throw new Error('Url can not be undefined.');
     }
-    this._uri = new URI(url);
+    this._uri = new URL(url);
     this._url = url;
   }
   get url() {
