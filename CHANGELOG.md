@@ -1,3 +1,13 @@
+<a name="1.0.71"></a>
+## [1.0.71](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.69...v1.0.71) (2016-11-21)
+
+
+### Update
+
+* Removed reference to the URI library and replaced it with native URL ([871fec0a7b4fba331f3184ad4954af213730c11a](https://github.com/advanced-rest-client/socket-fetch/commit/871fec0a7b4fba331f3184ad4954af213730c11a))
+
+
+
 <a name="1.0.70"></a>
 ## [1.0.70](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.69...v1.0.70) (2016-11-21)
 
