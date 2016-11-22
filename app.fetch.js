@@ -1558,15 +1558,30 @@ class SocketFetch extends ArcEventSource {
   _redirectRequest(options) {
     var location = options.location;
     // https://github.com/jarrodek/socket-fetch/issues/5
-    let u = new URL(location);
-    let protocol = u.protocol;
-    if (protocol === '') {
-      let path = u.pathname;
-      if (path && path[0] !== '/') {
-        path = '/' + path;
+    try {
+      let u = new URL(location);
+      let protocol = u.protocol;
+      if (protocol === '') {
+        let path = u.pathname;
+        if (path && path[0] !== '/') {
+          path = '/' + path;
+        }
+
       }
-      location = this._request.uri.origin + path;
+    } catch (e) {
+      // It must be relative location
+      let origin = this._request.uri.origin;
+      if (origin[origin.length - 1] === '/') {
+        origin = origin.substr(0, origin.length - 1);
+      }
+      if (location[0] !== '/') {
+        location = origin + this._request.uri.pathname + location;
+      } else {
+        location = origin + location;
+      }
+
     }
+
     // check if this is infinite loop
     if (this.redirects) {
       let loop = false;
