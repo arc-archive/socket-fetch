@@ -1,3 +1,13 @@
+<a name="1.0.75"></a>
+## [1.0.75](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.74...v1.0.75) (2016-11-22)
+
+
+### Fix
+
+* Fixed error thrown when redirect is relative ([8d3f6287b1f97660a5cb974505e83c61278f24dd](https://github.com/advanced-rest-client/socket-fetch/commit/8d3f6287b1f97660a5cb974505e83c61278f24dd))
+
+
+
 <a name="1.0.74"></a>
 ## [1.0.74](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.73...v1.0.74) (2016-11-22)
 
