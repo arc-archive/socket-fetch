@@ -1,3 +1,13 @@
+<a name="1.0.73"></a>
+## [1.0.73](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.72...v1.0.73) (2016-11-22)
+
+
+### Fix
+
+* Fixed an issue with missing new keyword when using URL class ([f2c8fbc614be00b1641337860941323cb0e432d9](https://github.com/advanced-rest-client/socket-fetch/commit/f2c8fbc614be00b1641337860941323cb0e432d9))
+
+
+
 <a name="1.0.72"></a>
 ## [1.0.72](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.69...v1.0.72) (2016-11-22)
 
