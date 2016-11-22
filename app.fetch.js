@@ -1558,7 +1558,7 @@ class SocketFetch extends ArcEventSource {
   _redirectRequest(options) {
     var location = options.location;
     // https://github.com/jarrodek/socket-fetch/issues/5
-    let u = URL(location);
+    let u = new URL(location);
     let protocol = u.protocol;
     if (protocol === '') {
       let path = u.pathname;
