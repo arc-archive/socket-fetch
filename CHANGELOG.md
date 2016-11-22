@@ -1,3 +1,13 @@
+<a name="1.0.74"></a>
+## [1.0.74](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.73...v1.0.74) (2016-11-22)
+
+
+### Fix
+
+* Fixed cookie parser dependency by adding import ([013831813779a3cd3dfc1821a68f5958eddd7756](https://github.com/advanced-rest-client/socket-fetch/commit/013831813779a3cd3dfc1821a68f5958eddd7756))
+
+
+
 <a name="1.0.73"></a>
 ## [1.0.73](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.72...v1.0.73) (2016-11-22)
 
