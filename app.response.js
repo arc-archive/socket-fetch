@@ -47,6 +47,13 @@ class ArcResponse {
       if (body === null) {
         body = '';
       }
+
+      if (init.statusText) {
+        // see: https://github.com/jarrodek/ChromeRestClient/issues/419#issuecomment-271532029
+        let encoder = new TextEncoder();
+        let bytes = encoder.encode(init.statusText);
+        init.statusText = String.fromCharCode.apply(null, bytes);
+      }
       this._response = new Response(body, init);
       this.rawResponse = body;
     }
