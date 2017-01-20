@@ -1,3 +1,9 @@
+<a name="1.0.76"></a>
+## [1.0.76](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.75...v1.0.76) (2017-01-20)
+
+
+
+
 <a name="1.0.75"></a>
 ## [1.0.75](https://github.com/advanced-rest-client/socket-fetch/compare/1.0.74...v1.0.75) (2016-11-22)
 
