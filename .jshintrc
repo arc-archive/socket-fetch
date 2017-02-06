@@ -21,6 +21,7 @@
     "Cookies": true,
     "FetchDigestAuth": true,
     "FetchNtlmAuth": true,
-    "FetchBasicAuth": true
+    "FetchBasicAuth": true,
+    "MultipartFormData": true
   }
 }

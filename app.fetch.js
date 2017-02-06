@@ -765,8 +765,8 @@ class SocketFetch extends ArcEventSource {
       let message = this.arrayBufferToString(buffer);
       if (this.debug) {
         this.log('Generated message to send\n' + message);
+        this.log('Sending message.');
       }
-      this.log('Sending message.');
       this._connection.messageSent = message;
       this._connection.stats._messageSending = performance.now();
       chrome.sockets.tcp.send(this._connection.socketId, buffer, this.onSend.bind(this));
@@ -921,9 +921,12 @@ class SocketFetch extends ArcEventSource {
       blobOptions.type = ct;
     }
     var body = this._request.body;
-    if (body instanceof FormData /*||
-      body instanceof URLSearchParams*/) {
+    if (body instanceof MultipartFormData) {
+      return body.generateMessage();
+    } else if (body instanceof FormData) {
       return this._transferAndCreateFileBuffer();
+    } else if (body instanceof ArrayBuffer) {
+      return Promise.resolve(body);
     }
     return new Promise((resolve, reject) => {
       if (typeof body === 'string') {
