@@ -203,7 +203,7 @@ class MultipartFormData {
    * @return {MultipartMessagePart} Returns the message part object or undefined if not found.
    */
   getPart(name) {
-    this._items.get(name);
+    return this._items.get(name);
   }
   /**
    * Removes field from the form.
