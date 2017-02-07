@@ -152,7 +152,6 @@ class MultipartFormData {
     for (var i = 0; i < 24; i++) {
       boundary += Math.floor(Math.random() * 10).toString(16);
     }
-    console.log('setting generated boundary', boundary);
     this.boundary = boundary;
   }
 
