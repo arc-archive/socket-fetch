@@ -89,6 +89,22 @@ class MultipartFormData {
      */
     this._eventNode = opts.eventNode || window;
   }
+  /**
+   * Clones this object into another MultipartFormData object.
+   * Note that the `eventNode` won't be added to the cloned object by default.
+   *
+   * @param {Boolean} cloneEventNode If set then the `eventNode` will be added to cloned object.
+   * @return {MultipartFormData} Cloned object
+   */
+  clone(cloneEventNode) {
+    var obj = new MultipartFormData();
+    obj._boundary = this._boundary;
+    obj._items = this._items;
+    if (cloneEventNode) {
+      obj._eventNode = this._eventNode;
+    }
+    return obj;
+  }
 
   get boundary() {
     return this._boundary;
