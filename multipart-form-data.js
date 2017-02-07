@@ -161,6 +161,28 @@ class MultipartFormData {
     this._items.set(name, part);
   }
   /**
+   * Override exising or set a message part object.
+   *
+   * @param {String} name The name of the field whose data is contained in value.
+   * @param {MultipartMessagePart} part A message part.
+   * @throws {TypeError} When the `part` is not a MultipartMessagePart object or when name is not
+   * set.
+   */
+  setPart(name, part) {
+    var error = '';
+    if (!name) {
+      error += 'Attribute name is required. ';
+    }
+    if (!part || !(part instanceof MultipartMessagePart)) {
+      error += 'Attribute part is an instance of MultipartMessagePart.';
+    }
+    if (error) {
+      throw new TypeError(error);
+    }
+    this._items.set(name, part);
+  }
+
+  /**
    * Gets a value for the name.
    *
    * @param {String} name Name of the entry
@@ -174,7 +196,15 @@ class MultipartFormData {
     }
     return part.value;
   }
-
+  /**
+   * Gets a message part for the name.
+   *
+   * @param {String} name Name of the entry
+   * @return {MultipartMessagePart} Returns the message part object or undefined if not found.
+   */
+  getPart(name) {
+    this._items.get(name);
+  }
   /**
    * Removes field from the form.
    *
