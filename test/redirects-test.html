@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="buffers.js"></script>
+    <link rel="import" href="../socket-fetch.html">
+  </head>
+  <body>
+    <script>
+    /* global assert, Headers, SocketFetch, TestBuffers */
+    suite('Redirecting', function() {
+      var message;
+      var result;
+      const URL = 'http://domain.com/test';
+
+      setup(function () {
+        let data = 'HTTP/1.1 307 TEMPORARY REDIRECT\n';
+        data += 'Date: Mon, 27 Jul 2009 12:28:53 GMT\n';
+        data += 'Location: http://other.url.com/\n';
+        data += 'Server: Apache/2.2.14 (Win32) \n';
+        data += 'Content-Length: 0\n';
+        data += 'Connection: Closed\n\n';
+        message = TestBuffers.stringToBuffer(data);
+        connection = new SocketFetch(URL);
+      });
+
+      test('Calls _redirectRequest()', function(done) {
+        var called = false;
+        connection._redirectRequest = function() {
+          called = true;
+        };
+        connection._processSocketMessage(message);
+        setTimeout(function() {
+          assert.isTrue(called);
+          done();
+        }, 5);
+      });
+
+      test('Fires beforeredirect event', function (done) {
+        var spy = sinon.spy();
+        connection.addEventListener('beforeredirect', spy);
+        connection._processSocketMessage(message);
+        setTimeout(function () {
+          assert.isTrue(spy.calledOnce);
+          done();
+        }, 5);
+      });
+
+      test('Cancelling beforeredirect event aborts the request', function (done) {
+        connection.addEventListener('beforeredirect', function(e) {
+          e.preventDefault();
+        });
+        connection._processSocketMessage(message);
+        connection._mainPromise.reject = function () { };
+        connection._cleanUp = function () { };
+        setTimeout(function () {
+          assert.isTrue(connection.aborted);
+          done();
+        }, 5);
+      });
+    });
+    </script>
+
+  </body>
+</html>

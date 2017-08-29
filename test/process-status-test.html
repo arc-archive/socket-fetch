@@ -1,0 +1,86 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="buffers.js"></script>
+    <link rel="import" href="../socket-fetch.html">
+  </head>
+  <body>
+    <script>
+    /* global assert, Headers, SocketFetch, TestBuffers */
+    suite('_processStatus()', function() {
+      var message;
+      var result;
+      const URL = 'http://domain.com/test';
+
+      suite('Full message', function() {
+        setup(function () {
+          let data = 'HTTP/1.1 200 OK\n';
+          data += 'Date: Mon, 27 Jul 2009 12:28:53 GMT\n';
+          data += 'Server: Apache/2.2.14 (Win32) \n';
+          data += 'Last - Modified: Wed, 22 Jul 2009 19:15:56 GMT\n';
+          data += 'Content-Length: 57\n';
+          data += 'Content-Type: text/html\n';
+          data += 'Connection: Closed\n\n';
+          data += '<html>\n';
+          data += '<body>\n';
+          data += '<h1>Hello, World!</h1>\n';
+          data += '</body>\n';
+          data += '</html>\n';
+          message = new Uint8Array(TestBuffers.stringToBuffer(data));
+          connection = new SocketFetch(URL);
+          result = connection._processStatus(message);
+        });
+
+        test('Computes status code', function () {
+          assert.equal(connection._connection.status, 200);
+        });
+
+        test('Computes reason message', function () {
+          assert.equal(connection._connection.statusMessage, 'OK');
+        });
+
+        test('Result is not null', function () {
+          assert.notEqual(result, null);
+        });
+
+        test('State set to HEADERS', function () {
+          assert.equal(connection.state, SocketFetch.HEADERS);
+        });
+      });
+
+      suite('Status message only', function () {
+        setup(function () {
+          let data = 'HTTP/1.1 204 Exists\n';
+          message = new Uint8Array(TestBuffers.stringToBuffer(data));
+          connection = new SocketFetch(URL);
+          result = connection._processStatus(message);
+        });
+
+        test('Computes status code', function () {
+          assert.equal(connection._connection.status, 204);
+        });
+
+        test('Computes reason message', function () {
+          assert.equal(connection._connection.statusMessage, 'Exists');
+        });
+      });
+      
+    });
+    </script>
+
+  </body>
+</html>

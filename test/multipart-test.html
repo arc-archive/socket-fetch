@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <link rel="import" href="../socket-fetch.html">
+  </head>
+  <body>
+    <script>
+    /* global assert, Headers, SocketFetch */
+    suite('Multipart request', function() {
+      var form;
+      var init;
+      var connection;
+      const URL = 'http://domain.com/test';
+      setup(function() {
+        var file = new Blob(['test'], {type: 'text/plain'});
+        form = new FormData();
+        form.append('file', file);
+        form.append('text', 'test');
+        init = {
+          method: 'POST',
+          headers: new Headers({
+            'x-test': 'value'
+          }),
+          body: form
+        };
+        connection = new SocketFetch(URL, init);
+      });
+
+      test('Generates a message', function() {
+        return connection._createFileBuffer()
+        .then(buffer => {
+          assert.isTrue(buffer instanceof ArrayBuffer, 'Message is an array buffer');
+        });
+      });
+
+      test('Extracts boundary form the generated message', function() {
+        return connection._createFileBuffer()
+        .then(buffer => {
+          let result = connection._getBoundary(buffer);
+          assert.typeOf(result, 'string', 'Boundary is string');
+          assert.equal(result.indexOf('--'), 0, 'Boundary starts with "--"');
+        });
+      });
+
+      test('Adds content-length header', function() {
+        return connection._createFileBuffer()
+        .then(buffer => {
+          connection._addContentLength(buffer);
+          var cl = connection._request.headers.get('content-length');
+          cl = Number(cl);
+          assert.typeOf(cl, 'number', 'Content-length header is a number');
+          assert.isAbove(cl, 0, 'Content-length header is bigger than 0');
+        });
+      });
+
+      test('Adds 0 size content-length header', function() {
+        connection._request.body = '';
+        return connection._createFileBuffer()
+        .then(buffer => {
+          connection._addContentLength(buffer);
+          var cl = connection._request.headers.get('content-length');
+          cl = Number(cl);
+          assert.typeOf(cl, 'number', 'Content-length header is a number');
+          assert.equal(cl, 0, 'Content-length header equal 0');
+        });
+      });
+
+      test('Generates a message and sets length', function() {
+        return connection.generateMessage()
+        .then(buffer => {
+          assert.isTrue(buffer instanceof ArrayBuffer, 'Message is an array buffer');
+          assert.isTrue(connection._isMultipartRequest, 'Detectst multipart request');
+          let ct = connection._request.headers.get('content-type');
+          assert.isTrue(/boundary=--.+/.test(ct), 'Adds boundary to the content-type header');
+          var cl = connection._request.headers.get('content-length');
+          cl = Number(cl);
+          assert.typeOf(cl, 'number', 'Content-length header is a number');
+          assert.isAbove(cl, 0, 'Content-length header is bigger than 0');
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>

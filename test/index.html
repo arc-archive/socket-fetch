@@ -9,71 +9,25 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
-
-  <link rel="import" href="../socket-fetch.html">
-</head>
-
-<body>
-  <p>Test passed for n=<span id="counter"></span></p>
-  <p id="result"></p>
-  <script>
-  //node test-srv.js
-
-  var counter = document.querySelector('#counter');
-  var result = document.querySelector('#result');
-  function run(size) {
-    // var url = `http://127.0.0.1:5000/range/${size}`;
-    var url = `http://127.0.0.1:1337/?chunk=6399&size=${size}`;
-    var init = {
-      'method': 'GET',
-      'debug': false
-    };
-    var connection = new SocketFetch(url, init);
-    return connection.fetch()
-      .then((response) => {
-        return response.text().then((result) => {
-          if (result.length !== size) {
-            console.log(`Expected length of ${size}, ${result.length} given.`);
-            result.innerText = `Expected length of ${size}, ${result.length} given.`;
-            return false;
-          }
-          counter.innerText = size;
-          return true;
-        });
-      })
-      .catch((err) => {
-        console.info('There was an error', err);
-        return false;
-      });
-  }
-  window.addEventListener('WebComponentsReady', function() {
-    console.clear();
-    // return;
-    var n = 21000;
-    var then = (res) => {
-      if (res) {
-        n++;
-        // window.setTimeout(() => {
-        //   run(n).then(then);
-        // }, 500);
-        run(n).then(then);
-      } else {
-        console.log('Test ended.');
-      }
-    };
-    run(n).then(then);
-  });
-  // Load and run all tests (.html, .js):
-  // WCT.loadSuites([
-  //   'basic-test.html',
-  // ]);
-  </script>
-</body>
-
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+  </head>
+  <body>
+    <script>
+      /* global WCT */
+      // Load and run all tests (.html, .js):
+      WCT.loadSuites([
+        'multipart-test.html',
+        'file-test.html',
+        'concat-buffers-test.html',
+        'process-status-test.html',
+        'process-headers.html',
+        'redirects-test.html'
+      ]);
+    </script>
+  </body>
 </html>

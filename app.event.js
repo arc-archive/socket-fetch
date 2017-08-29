@@ -83,23 +83,30 @@
      * Dispatches an Event at the specified EventTarget, invoking the affected EventListeners
      * in the appropriate order.
      *
-     * @type {Event} event An event to be dispatched.
+     * @param {Event} event An event to be dispatched.
+     * @return {Boolean} true if the event  
      */
     dispatchEvent(event) {
       var type = event.type;
+      var cancelable = event.cancelable;
       if (!type) {
         throw new TypeError('Argument is not a valid event.');
       }
       if (!this.events.has(type)) {
-        return;
+        return false;
       }
       var set = this.events.get(type);
       for (let listener of set) {
-        let canceled = listener(event);
-        if (event.cancelable && canceled) {
-          break;
+        try {
+          listener(event);
+          if (cancelable && event.defaultPrevented) {
+            return true;
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
+      return false;
     }
   }
 

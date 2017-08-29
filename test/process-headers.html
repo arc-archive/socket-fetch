@@ -1,0 +1,111 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="buffers.js"></script>
+    <link rel="import" href="../socket-fetch.html">
+  </head>
+  <body>
+    <script>
+    /* global assert, Headers, SocketFetch, TestBuffers */
+    suite('_processHeaders()', function() {
+      var message;
+      var result;
+      const URL = 'http://domain.com/test';
+
+      suite('Full message', function () {
+        setup(function () {
+          let data = 'Date: Mon, 27 Jul 2009 12:28:53 GMT\n';
+          data += 'Server: Apache/2.2.14 (Win32) \n';
+          data += 'Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\n';
+          data += 'Content-Length: 57\n';
+          data += 'Content-Type: text/html\n';
+          data += 'Connection: Closed\n\n';
+          message = new Uint8Array(TestBuffers.stringToBuffer(data));
+          connection = new SocketFetch(URL);
+          result = connection._processHeaders(message);
+        });
+
+        test('Computes headers object', function () {
+          assert.isTrue(connection._connection.headers instanceof Headers);
+        });
+
+        test('Contains headers', function () {
+          var itNext = connection._connection.headers.keys().next();
+          assert.isFalse(itNext.done);
+        });
+
+        test('Result is null', function () {
+          assert.equal(result, null);
+        });
+
+        test('State set to BODY', function () {
+          assert.equal(connection.state, SocketFetch.BODY);
+        });
+
+        test('Fires headersreceived custom event', function() {
+          var spy = sinon.spy();
+          connection.addEventListener('headersreceived', spy);
+          connection.state = 0;
+          connection._connection.headers = undefined;
+          connection._processHeaders(message);
+          assert.isTrue(spy.calledOnce);
+        });
+
+        test('Canceled headersreceived event aborts the request', function (done) {
+          connection.addEventListener('headersreceived', function(e) {
+            e.preventDefault();
+            setTimeout(function() {
+              assert.isTrue(connection.aborted);
+              done();
+            }, 1);
+          });
+          connection.state = 0;
+          connection._connection.headers = undefined;
+          connection._mainPromise.reject = function() {};
+          connection._cleanUp = function() {};
+          connection._processHeaders(message);
+        });
+      });
+
+      suite('Parianl message', function () {
+        setup(function () {
+          let data = 'Date: Mon, 27 Jul 2009 12:28:53 GMT\n';
+          data += 'Server: Apache/2.2.14 (Win32) \n';
+          data += 'Last-Modified: Wed, 22 Jul 2009 ';
+          message = new Uint8Array(TestBuffers.stringToBuffer(data));
+          connection = new SocketFetch(URL);
+          connection.state = SocketFetch.HEADERS;
+          result = connection._processHeaders(message);
+        });
+
+        test('Adds parial data to the temporary property', function () {
+          assert.isTrue(connection._connection.headers instanceof Uint8Array);
+        });
+
+        test('Result is null', function () {
+          assert.equal(result, null);
+        });
+
+        test('State set to HEADERS', function () {
+          assert.equal(connection.state, SocketFetch.HEADERS);
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>

@@ -37,7 +37,6 @@ class ArcResponse {
       // Expecting a init.error to be an Error object.
       this.error = init.error;
     } else {
-      // not sure why Response object do not accept 1xx status codes...
       if (init.status >= 100 && init.status < 200 || init.status === 0) {
         init.status = 200;
       } else if (init.status === undefined) {
@@ -66,7 +65,7 @@ class ArcResponse {
     // To be set only if this response is a redirect. It contains the URL of the request for
     // this response.
     this.requestUrl = undefined;
-    // To be set only if this response is a redirect. Originally message sent to server.
+    // To be set only if this response is a redirect. Original message sent to server.
     this.messageSent = undefined;
     // Object filled in with auth method data when reporting 401 or 407.
     // It will contain a `method` property with (lowercase) auth method name
