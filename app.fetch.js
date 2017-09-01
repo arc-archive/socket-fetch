@@ -71,7 +71,7 @@
      *   method cannot have a body.
      * - redirect: The redirect mode to use: follow or error. If follow is set the result will
      *   contain redairect information.
-     * - requestId: Application innternall requests indetification system. It is set on each event 
+     * - requestId: Application innternall requests indetification system. It is set on each event
      *   detail object
      */
     constructor(url, opts) {
@@ -654,7 +654,7 @@
         return Promise.reject(new Error(`The response status is empty.
         It means that the successful connection wasn't made. Check your request parameters.`));
       }
-      
+
       var promise;
       if (this._connection.body) {
         promise = this.decompressData(this._connection.body);
@@ -906,7 +906,8 @@
       }
       var buffer = this.stringToArrayBuffer(headers.join('\r\n'));
       var endBuffer = new Uint8Array([13, 10, 13, 10]).buffer;
-      return this._concatArrayBuffers(buffer, endBuffer, fileBuffer);
+      var result = this._concatArrayBuffers(buffer, endBuffer, fileBuffer);
+      return Promise.resolve(result);
     }
     /**
      * Concatenates `ArrayBuffer`s into new Array buffer.
@@ -925,7 +926,7 @@
       });
       return tmp.buffer;
     }
-    
+
     /**
      * Create an ArrayBuffer from the payload data.
      * In ARC the body can be only a String, File or FormData.
