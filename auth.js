@@ -7,9 +7,9 @@
   class FetchAuth {
     constructor(opts) {
       // Login to authorize with
-      this.uid = opts.uid || undefined;
+      this.uid = opts.uid || opts.username || undefined;
       // Password to authorize with
-      this.passwd = opts.passwd || undefined;
+      this.passwd = opts.passwd || opts.password || undefined;
       // Aythentication method: basic, ntlm, digest (lowercase)
       this.method = opts.method || undefined;
       // Optional domain for authentication.

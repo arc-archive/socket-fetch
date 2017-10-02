@@ -269,7 +269,7 @@ class ArcRequest {
    * {Boolean} proxy Optional. True for proxy authentication. Default to false.
    */
   set auth(opts) {
-    if (!opts.uid || !opts.passwd || !opts.method) {
+    if (!(opts.uid || opts.username) || !(opts.passwd || opts.password) || !opts.method) {
       console.warn('Invalid auth options. uid, passwd and method are required');
     }
     opts.domain = opts.domain || undefined;
